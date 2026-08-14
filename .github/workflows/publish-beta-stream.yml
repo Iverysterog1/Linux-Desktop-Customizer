@@ -1,0 +1,60 @@
+name: Publish verified beta
+
+on:
+  push:
+    paths:
+      - 'beta-source/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Reconstruct reviewed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat beta-source/chunk-*.txt > /tmp/source.stream
+          echo 'a0f68b37b59947401a54cb3ac9a51fd1864c16c1e449d32b8c508a0d62a4e7a5  /tmp/source.stream' | sha256sum -c -
+          python3 beta-source/reconstruct.py /tmp/source.stream /tmp/source-tree
+          test "$(cat /tmp/source-tree/VERSION)" = "0.9.0-beta.1"
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/source-tree/. .
+
+      - name: Validate beta
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-assets.txt
+          python scripts/generate_signature_themes.py
+          go test ./... -count=1
+          go vet ./...
+          go test -race ./... -count=1
+          go build -o /tmp/ldc ./cmd/ltc
+          go build -o /tmp/ltc-ui ./cmd/ltc-ui
+          bash -n packaging/install-user.sh packaging/uninstall-user.sh
+          git diff --check
+
+      - name: Publish clean beta main
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf themes/official bin dist
+          git config user.name 'JP99'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan beta-main
+          git add -A
+          git commit -m 'Prepare 0.9.0-beta.1 public beta'
+          git push --force origin beta-main:main
