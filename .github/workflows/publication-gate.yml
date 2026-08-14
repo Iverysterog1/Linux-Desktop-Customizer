@@ -1,0 +1,88 @@
+name: Publication verification gate
+
+on:
+  push:
+    branches: [main]
+    paths: ['publication-check/READY']
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Verify clean repository shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f go.mod
+          test -f cmd/ltc/main.go
+          test -f cmd/ltc-ui/main.go
+          test -f LICENSE
+          test -f README.md
+          test -f SECURITY.md
+          test -f CONTRIBUTING.md
+          test -f docs/VALIDATION.md
+          for slug in fire water wind earth mac-inspired windows-inspired; do
+            test -f "assets/theme-previews/$slug.png"
+            test -f "themes/official/$slug/preview.png"
+          done
+          test ! -e bootstrap
+          test ! -e import-bin
+          test ! -e import-parts
+          test ! -e import-tunnel
+          test ! -e final-sync
+          grep -q 'assets/theme-previews/fire.png' README.md
+          grep -q 'assets/theme-previews/windows-inspired.png' README.md
+
+      - name: Run release-quality checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          go test ./... -count=1
+          go vet ./...
+          go build ./cmd/ltc
+          go build ./cmd/ltc-ui
+          bash -n packaging/install-user.sh packaging/uninstall-user.sh
+          git diff --check
+
+      - name: Record publication verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs
+          cat > docs/PUBLICATION_STATUS.md <<'EOF'
+          # Public repository verification
+
+          Initial public repository verification for **Linux Desktop Customizer 0.9.0-visual-composer**.
+
+          Verified by the publication gate:
+
+          - source tree is present and import/bootstrap scaffolding is absent;
+          - six official theme preview images are present;
+          - six complete official generated theme trees are present;
+          - `go test ./... -count=1` passes;
+          - `go vet ./...` passes;
+          - `go build ./cmd/ltc` passes;
+          - `go build ./cmd/ltc-ui` passes;
+          - installer and uninstaller shell syntax checks pass;
+          - `git diff --check` passes.
+
+          This automated gate does **not** claim real-hardware validation across every Linux desktop/compositor combination. Remaining platform validation is tracked in `docs/VALIDATION.md`.
+          EOF
+
+          rm -rf publication-check
+          rm -f .github/workflows/publication-gate.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Record initial public repository verification'
+          git push origin main
