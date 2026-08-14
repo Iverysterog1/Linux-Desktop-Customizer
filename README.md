@@ -12,15 +12,9 @@ The project focuses on a simple workflow: **preview → review → use → undo*
 
 ## Signature themes
 
-The repository includes the source previews for six original JP99 signature themes. Their full passive theme payloads are generated reproducibly from code-owned design tokens.
+Linux Desktop Customizer includes six original JP99 signature themes: **Fire, Water, Wind, Earth, Mac Inspired and Windows Inspired**.
 
-| Fire | Water | Wind |
-|---|---|---|
-| ![Fire](assets/theme-previews/fire.png) | ![Water](assets/theme-previews/water.png) | ![Wind](assets/theme-previews/wind.png) |
-
-| Earth | Mac Inspired | Windows Inspired |
-|---|---|---|
-| ![Earth](assets/theme-previews/earth.png) | ![Mac Inspired](assets/theme-previews/mac-inspired.png) | ![Windows Inspired](assets/theme-previews/windows-inspired.png) |
+> Theme preview images are being added together with the complete source tree. They are temporarily hidden here so the public README does not display broken image placeholders while the repository import is being completed.
 
 The “Mac Inspired” and “Windows Inspired” themes are original, unaffiliated designs inspired by broad desktop design language; they do not include vendor-owned assets.
 
@@ -111,19 +105,13 @@ bin/ltc
 bin/ltc-ui
 ```
 
-## Why generated theme payloads are not committed
+## Theme payloads
 
-The complete `themes/official/` tree contains hundreds of generated cursor, sound, wallpaper and theme files. Keeping those outputs in every Git commit would make the repository substantially larger without adding source information.
-
-Instead, the repository stores:
-
-- the generator: `scripts/generate_signature_themes.py`;
-- six approved source previews under `assets/theme-previews/`;
-- the code-owned design tokens and generation logic.
+The complete official theme tree is reproducible from `scripts/generate_signature_themes.py` and repository-owned design definitions.
 
 A clean regeneration was checked against the supplied `0.9.0-visual-composer` source package: all **379 generated files** were recreated with the same paths and SHA-256 hashes.
 
-GitHub Actions regenerates the payload before tests and before packaging Linux releases, so published release archives still contain the complete `themes/official/` directory.
+GitHub Actions regenerates the payload before tests and before packaging Linux releases.
 
 ## Linux releases
 
