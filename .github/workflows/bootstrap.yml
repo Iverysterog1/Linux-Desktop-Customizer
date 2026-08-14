@@ -13,23 +13,79 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Expand reviewed source tree
+        with:
+          fetch-depth: 0
+      - name: Reconstruct reviewed source tree
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/ldc-source
-          cat bootstrap/payload.part.*.b64 | base64 --decode > /tmp/ldc-source.tar.xz
+          grep -h -v '^#' bootstrap/payload.part.*.b64 | base64 --decode > /tmp/ldc-source.tar.xz
           echo '3146a1e26e91f23cc8fb333e74a904b4b05b9c624e26cc0837d1a414d446eb36  /tmp/ldc-source.tar.xz' | sha256sum -c -
+          mkdir -p /tmp/ldc-source
           tar -xJf /tmp/ldc-source.tar.xz -C /tmp/ldc-source
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a /tmp/ldc-source/. .
-          rm -rf bootstrap
-          rm -f .github/workflows/bootstrap.yml
-      - name: Commit reviewed source tree
+      - name: Materialize all official theme assets
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          python3 -m pip install -r requirements-assets.txt
+          python3 scripts/generate_signature_themes.py
+          mkdir -p assets/theme-previews
+          for slug in fire water wind earth mac-inspired windows-inspired; do
+            cp "themes/official/$slug/preview.png" "assets/theme-previews/$slug.png"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.gitignore')
+          s = p.read_text()
+          s = s.replace('\n# Reproducibly generated official theme payloads\nthemes/official/\n', '\n')
+          p.write_text(s)
+
+          p = Path('README.md')
+          s = p.read_text()
+          old = '''## Why generated theme payloads are not committed
+
+The complete `themes/official/` tree contains hundreds of generated cursor, sound, wallpaper and theme files. Keeping those outputs in every Git commit would make the repository substantially larger without adding source information.
+
+Instead, the repository stores:
+
+- the generator: `scripts/generate_signature_themes.py`;
+- six approved source previews under `assets/theme-previews/`;
+- the code-owned design tokens and generation logic.
+
+A clean regeneration was checked against the supplied `0.9.0-visual-composer` source package: all **379 generated files** were recreated with the same paths and SHA-256 hashes.
+
+GitHub Actions regenerates the payload before tests and before packaging Linux releases, so published release archives still contain the complete `themes/official/` directory.
+'''
+          new = '''## Complete official theme assets
+
+The repository includes the complete `themes/official/` tree together with the generator, design logic and preview assets. This keeps the public repository self-contained: a clone contains the source code **and** the current official Fire, Water, Wind, Earth, Mac Inspired and Windows Inspired theme payloads.
+
+The assets remain reproducible through `scripts/generate_signature_themes.py`. A clean regeneration was checked against the supplied `0.9.0-visual-composer` source package: all **379 generated files** were recreated with the same paths and SHA-256 hashes.
+
+GitHub Actions regenerates the payload during testing and before packaging Linux releases so generated assets stay verifiable.
+'''
+          if old not in s:
+              raise SystemExit('README generated-assets section not found')
+          p.write_text(s.replace(old, new))
+          PY
+      - name: Validate before publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          go test ./...
+          go vet ./...
+          go build ./cmd/ltc
+          go build ./cmd/ltc-ui
+          git diff --check
+      - name: Publish one clean main commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'JP99'
+          git config user.email 'sousa.clerigo@gmail.com'
+          git checkout --orphan clean-main
           git add -A
-          git commit -m 'Publish Linux Desktop Customizer 0.9.0 source'
-          git push
+          git commit -m 'Initial public release: Linux Desktop Customizer 0.9.0'
+          git push --force origin clean-main:main
