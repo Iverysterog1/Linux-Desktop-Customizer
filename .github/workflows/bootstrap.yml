@@ -3,7 +3,7 @@ name: Bootstrap source
 on:
   push:
     paths:
-      - 'bootstrap/source.tar.gz.b64'
+      - 'bootstrap/**'
 
 permissions:
   contents: write
@@ -18,7 +18,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/ldc-source
-          base64 --decode bootstrap/source.tar.gz.b64 > /tmp/ldc-source.tar.gz
+          cat bootstrap/source.part.*.b64 | base64 --decode > /tmp/ldc-source.tar.gz
           tar -xzf /tmp/ldc-source.tar.gz -C /tmp/ldc-source
           cp -a /tmp/ldc-source/. .
           rm -rf bootstrap
