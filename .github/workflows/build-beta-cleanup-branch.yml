@@ -1,0 +1,127 @@
+name: Build verified beta cleanup branch
+
+on:
+  push:
+    paths:
+      - 'beta-pr/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  build-clean-branch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reconstruct, validate and publish cleanup branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          : > /tmp/ldc-beta.tar.xz
+          fetch_blob() {
+            gh api "repos/$GITHUB_REPOSITORY/git/blobs/$1" --jq .content | tr -d '\n' | base64 -d >> /tmp/ldc-beta.tar.xz
+          }
+          fetch_blob 617acebce23f59124269e03c65f0fd6bb3b1be70
+          fetch_blob cf03a0e7202be9a3f0b7897a704b4087c9814719
+          fetch_blob 673858ea8028133c68dd700c824cf22d610184a4
+          fetch_blob f8042331f3cfa662a93afdd04a7231703dd98075
+          fetch_blob cfd027fdf53fcd403a020f7a934b74d0febdc98c
+          fetch_blob 3695085d2f0a69956dd155d465e2725942b48385
+          fetch_blob 351ff955e694f658a8f6f39b2458503a70bbcf78
+          fetch_blob e94ad44b6225f3b83d8e36d46560beea27264772
+          fetch_blob bb33872518f7b9d18e21ac385f76676fe78cf36b
+          fetch_blob 86e8fc45d980475d88382e534f30c98eef1af150
+          fetch_blob 14afbd78b9c189819508710e1f38db87f31585a1
+          fetch_blob 68ce7aca4a1189d991efa756e6235fee797adf12
+          fetch_blob e726f3d796111698402c939d0d1084a408539601
+          fetch_blob 9d1eda00dddc4789b5a5cfede274e3f4baabd521
+          fetch_blob 84098dd1fb962cb322892484152af3972613447b
+          fetch_blob 611ddeebe7f37a630532ffe0b6a375987d773ce5
+          fetch_blob f9527a156e649820dcc3826afaf621f592356ffc
+          fetch_blob 2a7ebd80064c5962588ce59ad45d38e51a0fbd2b
+          fetch_blob feee19d94448edac055434426aea8108dacf32fa
+          fetch_blob da6d0b672526f460019d92732def7fd5c5d77752
+          fetch_blob 056b41787ab7f789e08ea9bd370de26096988b81
+          fetch_blob 918d2d70b6f552339bfc2b13c96f7a10142a6a6e
+          fetch_blob f8c52047d068099e45a6ef3b611435cc81f92b6d
+          fetch_blob 6f6723095bb5f0c5c3fad27b5116ca3a3337b5ef
+          fetch_blob 92ed0eb683bcfd64708c7f3d9fa6f428d18af4c8
+          fetch_blob 4fbb923e7f3178b22445ebf30f408281911f5d46
+          fetch_blob 7c4ec5ecc6ae93bc90444a4a5da45a8f0bb00205
+          fetch_blob 09645ef3ca9f3564395ddf762f9f8f83410507d2
+          fetch_blob 7f2cb8157cb834371d5c2c6dbdd5974e95360ada
+          fetch_blob 762d023ca08c022cbb1a912030766f6972fdc089
+          fetch_blob a667652441125582e387057999c3fa0d759b0ad1
+          fetch_blob d6f0c666cd823588205677566986f4d3132ce7dd
+          fetch_blob db70ff24edf403409a59c00d7107a963800d080b
+          fetch_blob e7996255197a029cb24076920057f45fc9da771c
+          fetch_blob 0251a93e1bb2b651802868a01321e222ecf6a05e
+          fetch_blob 8943b96af3f1109965494226093441dffb3d39c6
+          fetch_blob c86ca53447c723482314cedebe1999898c481351
+          fetch_blob 756ec8cc03167083ef3479462416814962376c8b
+          fetch_blob c3ee3ae69cbda22af78d3c5f5d3f147938a3e8cd
+          fetch_blob b951123c696562f43d36387189b2dd1fbb19c080
+          fetch_blob 33d3302ec4ab5f5af23ce85f9a85cddc803ff225
+          fetch_blob 51ed7217500bbfafcf4fce1acc33ac4ce92f7718
+          fetch_blob 9c3b2f0e2282906291b0ff49f42f4b7bab5cf658
+          fetch_blob 18c415334fb1bc0e22d5fff6d109b3bd7da30ca7
+          fetch_blob 14e0587dc7744354b269368388730300ff69efc2
+          fetch_blob 9db25ade812e750f4addec256cb7ca8fa4d14f61
+          fetch_blob 4d8cb5bc0d391289fdc1ff00b9a52d71bb3ec913
+          fetch_blob 06f30797eb51c9f8da76186cf33a43ec430e1494
+          fetch_blob c16bf3f436126eb0fb3db84e341939cc57cf26da
+          fetch_blob 1ef76892751a89571cdf00c47892a1f32a34f1ea
+          fetch_blob a31d70c3ebaa849175f09a20c50aa2eb8a2ce116
+          fetch_blob 41f20cd8718f2d970ca8fbfbdb34f6e2b9ec89a9
+          fetch_blob 4747c7cc0f9fb780ac173a81ae509a87b689a301
+          fetch_blob 1288218f609b9434f1c177bd9c3b1b0d867b60da
+          fetch_blob 4e63304fd7f0359fc6520023a96d8ef8f58e4455
+          fetch_blob 7460c60ac89de3842808a3bc5e99ccde72898b37
+
+          echo 'c1e95430c5fe2bba0259216240c8d056686f74ba09b9f1607ea5d8e33af6fce5  /tmp/ldc-beta.tar.xz' | sha256sum -c -
+          mkdir -p /tmp/ldc-source
+          tar -xJf /tmp/ldc-beta.tar.xz -C /tmp/ldc-source
+          test "$(cat /tmp/ldc-source/VERSION)" = '0.9.0-beta.1'
+
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/ldc-source/. .
+          test "$(cat VERSION)" = '0.9.0-beta.1'
+          for p in bootstrap import-parts import-tunnel publication-check publication-race release-trigger beta-source beta-archive beta-pr final-sync; do test ! -e "$p"; done
+          find .github/workflows -maxdepth 1 -type f -printf '%f\n' | sort > /tmp/workflows.txt
+          printf 'build-linux.yml\nci.yml\n' | diff -u - /tmp/workflows.txt
+          for p in earth fire mac-inspired water wind windows-inspired; do test -f "assets/theme-previews/$p.svg"; done
+          ! grep -R 'JP99/Linux-Desktop-Customizer' -n --exclude-dir=.git .
+
+          python3 -m pip install -r requirements-assets.txt
+          python3 scripts/generate_signature_themes.py
+          test "$(find themes/official -type f | wc -l)" -ge 379
+          go test ./... -count=1
+          go vet ./...
+          go test -race ./... -count=1
+          go build -o /tmp/ltc ./cmd/ltc
+          go build -o /tmp/ltc-ui ./cmd/ltc-ui
+          bash -n packaging/linux/install-user.sh
+          bash -n packaging/linux/uninstall-user.sh
+          git diff --check
+          rm -rf themes/official bin dist
+
+          git config user.name 'JP99'
+          git config user.email 'sousa.clerigo@gmail.com'
+          git add -A
+          TREE="$(git write-tree)"
+          git fetch origin main
+          PARENT="$(git rev-parse origin/main)"
+          COMMIT="$(printf '%s\n' 'Prepare 0.9.0-beta.1 public beta' | git commit-tree "$TREE" -p "$PARENT")"
+          git push --force origin "$COMMIT:refs/heads/beta-cleanup"
+          echo "Published beta-cleanup at $COMMIT"
