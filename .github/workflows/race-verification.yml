@@ -1,0 +1,40 @@
+name: Race detector verification
+
+on:
+  push:
+    branches: [main]
+    paths: ['publication-race/READY']
+
+permissions:
+  contents: write
+
+jobs:
+  race:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - name: Run Go race detector
+        run: go test -race ./...
+      - name: Record successful race verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('docs/PUBLICATION_STATUS.md')
+          s = p.read_text()
+          marker = '- `go test -race ./...` passes;\n'
+          if marker not in s:
+              s = s.replace('- `go vet ./...` passes;\n', '- `go vet ./...` passes;\n' + marker)
+              p.write_text(s)
+          PY
+          rm -rf publication-race
+          rm -f .github/workflows/race-verification.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Record race detector verification'
+          git push origin main
