@@ -1,0 +1,79 @@
+name: Finalize beta source
+
+on:
+  push:
+    paths:
+      - 'beta-import/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct reviewed source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ldc-patches
+          cp beta-import/part-*.patch /tmp/ldc-patches/
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          git apply /tmp/ldc-patches/part-*.patch
+          test "$(cat VERSION)" = "0.9.0-beta.1"
+          test -f README.md
+          test -f SECURITY_TESTING_POLICY.md
+          test -f docs/TEST_VISIBILITY.md
+          test -f .github/workflows/ci.yml
+          test -f .github/workflows/build-linux.yml
+          test ! -e bootstrap
+          test ! -e import-parts
+          test ! -e final-sync
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate official themes
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-assets.txt
+          python scripts/generate_signature_themes.py
+          test -f themes/official/index.json
+          for s in fire water wind earth mac-inspired windows-inspired; do
+            test -f "themes/official/$s/manifest.json"
+            test -f "themes/official/$s/preview.png"
+          done
+
+      - name: Validate beta source
+        run: |
+          set -euo pipefail
+          go test ./... -count=1
+          go vet ./...
+          go test -race ./... -count=1
+          go build -o /tmp/ldc ./cmd/ltc
+          go build -o /tmp/ltc-ui ./cmd/ltc-ui
+          bash -n packaging/install-user.sh packaging/uninstall-user.sh
+          git diff --check
+          if grep -R "JP99/Linux-Desktop-Customizer" --exclude-dir=themes --exclude-dir=.git .; then
+            echo "stale repository URL found"
+            exit 1
+          fi
+
+      - name: Publish one clean beta main commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf themes/official bin dist
+          git config user.name 'JP99'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git checkout --orphan clean-main
+          git add -A
+          git commit -m 'Prepare 0.9.0-beta.1 public beta'
+          git push --force origin clean-main:main
