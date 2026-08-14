@@ -1,0 +1,54 @@
+name: Guarded v0.9.0 tag
+
+on:
+  push:
+    branches: [main]
+    paths: ['release-trigger/READY']
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require completed publication verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq -- '- `go test -race ./...` passes;' docs/PUBLICATION_STATUS.md
+          grep -Fq '0.9.0-visual-composer' VERSION
+          test ! -e bootstrap
+          test ! -e import-bin
+          test ! -e import-parts
+          test ! -e import-tunnel
+          test ! -e final-sync
+          test ! -e publication-race
+
+      - name: Remove one-time release scaffolding
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf release-trigger
+          rm -f .github/workflows/tag-v0.9.0.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Prepare v0.9.0 release'
+            git push origin main
+          fi
+
+      - name: Create release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git rev-parse v0.9.0 >/dev/null 2>&1; then
+            exit 0
+          fi
+          git tag -a v0.9.0 -m 'Linux Desktop Customizer 0.9.0'
+          git push origin v0.9.0
