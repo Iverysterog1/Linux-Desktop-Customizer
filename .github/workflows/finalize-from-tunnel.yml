@@ -1,0 +1,81 @@
+name: Finalize reviewed repository
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'import-tunnel/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch reviewed source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 5 --retry-delay 2 \
+            'https://ldc-jp99-20260814.serveo.net/ldc-source-text.tar.xz' \
+            -o /tmp/ldc-source.tar.xz
+          echo '3146a1e26e91f23cc8fb333e74a904b4b05b9c624e26cc0837d1a414d446eb36  /tmp/ldc-source.tar.xz' | sha256sum -c -
+          mkdir -p /tmp/ldc-source
+          tar -xJf /tmp/ldc-source.tar.xz -C /tmp/ldc-source
+
+      - name: Generate complete official assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/ldc-source
+          python -m pip install -r requirements-assets.txt
+          python scripts/generate_signature_themes.py
+          mkdir -p assets/theme-previews
+          for slug in fire water wind earth mac-inspired windows-inspired; do
+            cp "themes/official/$slug/preview.png" "assets/theme-previews/$slug.png"
+          done
+
+      - name: Validate before publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/ldc-source
+          go test ./... -count=1
+          go vet ./...
+          go build ./cmd/ltc
+          go build ./cmd/ltc-ui
+          bash -n packaging/install-user.sh packaging/uninstall-user.sh
+          git init -q
+          git add -A
+          git add -f themes/official assets/theme-previews
+          git diff --cached --check
+          rm -rf .git
+
+      - name: Publish one clean main commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'JP99'
+          git config user.email '314643088+Iverysterog1@users.noreply.github.com'
+          git checkout --orphan clean-main
+          git rm -rf .
+          git clean -fdx
+          cp -a /tmp/ldc-source/. .
+          git add -A
+          git add -f themes/official assets/theme-previews
+          git commit -m 'Initial public release: Linux Desktop Customizer 0.9.0'
+          git push --force origin clean-main:main
