@@ -1,0 +1,474 @@
+diff --git a/.gitattributes b/.gitattributes
+new file mode 100644
+index 0000000..34caff6
+--- /dev/null
++++ b/.gitattributes
+@@ -0,0 +1,5 @@
++* text=auto eol=lf
++*.sh text eol=lf
++*.go text eol=lf
++*.md text eol=lf
++*.json text eol=lf
+diff --git a/.github/ISSUE_TEMPLATE/bug.yml b/.github/ISSUE_TEMPLATE/bug.yml
+new file mode 100644
+index 0000000..a1f7e33
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/bug.yml
+@@ -0,0 +1,45 @@
++name: Bug report
++description: Report a reproducible problem after reviewing what you choose to share
++title: "[Bug] "
++body:
++  - type: markdown
++    attributes:
++      value: |
++        Linux Desktop Customizer never uploads diagnostics automatically. Please share only information you have reviewed and are comfortable making public.
++  - type: textarea
++    attributes:
++      label: What happened?
++    validations:
++      required: true
++  - type: input
++    attributes:
++      label: Linux distribution and version
++    validations:
++      required: true
++  - type: input
++    attributes:
++      label: Desktop/session
++      description: e.g. KDE Plasma 6 / Wayland
++    validations:
++      required: true
++  - type: input
++    attributes:
++      label: Linux Desktop Customizer version
++      description: Output of `ltc version`
++    validations:
++      required: true
++  - type: textarea
++    attributes:
++      label: Steps to reproduce
++    validations:
++      required: true
++  - type: textarea
++    attributes:
++      label: Optional sanitized diagnostics
++      description: Review `ltc diagnostics` before pasting anything here. Do not include secrets or private files.
++  - type: checkboxes
++    attributes:
++      label: Privacy check
++      options:
++        - label: I reviewed the information above and chose to submit it publicly.
++          required: true
+diff --git a/.github/REPOSITORY_DESCRIPTION.txt b/.github/REPOSITORY_DESCRIPTION.txt
+new file mode 100644
+index 0000000..386d304
+--- /dev/null
++++ b/.github/REPOSITORY_DESCRIPTION.txt
+@@ -0,0 +1 @@
++A privacy-first open-source app to customize the entire Linux desktop from one safe, reversible interface.
+diff --git a/.github/workflows/build-linux.yml b/.github/workflows/build-linux.yml
+new file mode 100644
+index 0000000..f0fea6e
+--- /dev/null
++++ b/.github/workflows/build-linux.yml
+@@ -0,0 +1,90 @@
++name: Linux builds
++
++on:
++  workflow_dispatch:
++  push:
++    tags: ['v*']
++
++permissions:
++  contents: read
++
++jobs:
++  test:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++      - uses: actions/setup-go@v5
++        with:
++          go-version: '1.23.x'
++      - uses: actions/setup-python@v5
++        with:
++          python-version: '3.12'
++          cache: pip
++          cache-dependency-path: requirements-assets.txt
++      - run: python -m pip install -r requirements-assets.txt
++      - run: python scripts/generate_signature_themes.py
++      - run: go test ./...
++      - run: go vet ./...
++      - run: go test -race ./...
++
++  build:
++    needs: test
++    strategy:
++      matrix:
++        arch: [amd64, arm64]
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++      - uses: actions/setup-go@v5
++        with:
++          go-version: '1.23.x'
++      - uses: actions/setup-python@v5
++        with:
++          python-version: '3.12'
++          cache: pip
++          cache-dependency-path: requirements-assets.txt
++      - run: python -m pip install -r requirements-assets.txt
++      - name: Rebuild official themes
++        run: python scripts/generate_signature_themes.py
++      - name: Cross-compile Linux binaries
++        env:
++          GOOS: linux
++          GOARCH: ${{ matrix.arch }}
++          CGO_ENABLED: '0'
++          VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '0.9.0-dev' }}
++        run: |
++          mkdir -p dist/linux-desktop-customizer-linux-${GOARCH}
++          LDFLAGS="-s -w -X linux-theme-commons/internal/version.Value=${VERSION}"
++          go build -trimpath -ldflags="$LDFLAGS" -o dist/linux-desktop-customizer-linux-${GOARCH}/ltc ./cmd/ltc
++          go build -trimpath -ldflags="$LDFLAGS" -o dist/linux-desktop-customizer-linux-${GOARCH}/ltc-ui ./cmd/ltc-ui
++          cp packaging/install-user.sh packaging/uninstall-user.sh README.md LICENSE dist/linux-desktop-customizer-linux-${GOARCH}/
++          mkdir -p dist/linux-desktop-customizer-linux-${GOARCH}/themes
++          cp -R themes/official dist/linux-desktop-customizer-linux-${GOARCH}/themes/
++          tar -C dist -czf dist/linux-desktop-customizer-linux-${GOARCH}.tar.gz linux-desktop-customizer-linux-${GOARCH}
++      - uses: actions/upload-artifact@v4
++        with:
++          name: linux-desktop-customizer-linux-${{ matrix.arch }}
++          path: dist/linux-desktop-customizer-linux-${{ matrix.arch }}.tar.gz
++
++  release:
++    if: startsWith(github.ref, 'refs/tags/v')
++    needs: build
++    runs-on: ubuntu-latest
++    permissions:
++      contents: write
++    steps:
++      - uses: actions/download-artifact@v4
++        with:
++          pattern: linux-desktop-customizer-linux-*
++          path: dist
++          merge-multiple: true
++      - name: Checksums
++        run: (cd dist && sha256sum *.tar.gz > SHA256SUMS.txt)
++      - name: Publish GitHub Release
++        env:
++          GH_TOKEN: ${{ github.token }}
++          TAG: ${{ github.ref_name }}
++        run: |
++          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
++            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
++          gh release upload "$TAG" dist/*.tar.gz dist/SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+new file mode 100644
+index 0000000..d44ce4c
+--- /dev/null
++++ b/.github/workflows/ci.yml
+@@ -0,0 +1,39 @@
++name: CI
++
++on:
++  push:
++  pull_request:
++
++permissions:
++  contents: read
++
++jobs:
++  test:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++      - uses: actions/setup-go@v5
++        with:
++          go-version: '1.23.x'
++      - uses: actions/setup-python@v5
++        with:
++          python-version: '3.12'
++          cache: pip
++          cache-dependency-path: requirements-assets.txt
++      - name: Install asset generator dependencies
++        run: python -m pip install -r requirements-assets.txt
++      - name: Rebuild official themes
++        run: |
++          python scripts/generate_signature_themes.py
++          mkdir -p assets/theme-previews
++          for slug in fire water wind earth mac-inspired windows-inspired; do
++            cp "themes/official/$slug/preview.png" "assets/theme-previews/$slug.png"
++          done
++      - name: Verify generated assets are committed
++        run: git diff --exit-code -- themes/official assets/theme-previews
++      - run: go test ./...
++      - run: go vet ./...
++      - run: go test -race ./...
++      - run: git diff --check
++      - run: go build ./cmd/ltc
++      - run: go build ./cmd/ltc-ui
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..5ba5363
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,5 @@
++/bin/
++/dist/
++*.test
++*.out
++.DS_Store
+diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md
+new file mode 100644
+index 0000000..da16f2a
+--- /dev/null
++++ b/CONTRIBUTING.md
+@@ -0,0 +1,10 @@
++# Contributing
++
++Contributions are welcome. Keep the trusted core small, deterministic and testable.
++
++- Run `go test ./...` and `go vet ./...`.
++- Add tests for every security or transaction behavior change.
++- Do not add unrestricted shell execution to theme packages.
++- New desktop adapters must document the exact versions/session types tested in reality.
++- New Commons licenses require review; do not broaden the allowlist casually.
++- Preserve attribution and remix ancestry in examples and fixtures.
+diff --git a/CREDITS.md b/CREDITS.md
+new file mode 100644
+index 0000000..02378d3
+--- /dev/null
++++ b/CREDITS.md
+@@ -0,0 +1,7 @@
++# Credits
++
++**Linux Desktop Customizer** was conceived and directed by **JP99**, including the product idea, visual direction, privacy model, community/remix philosophy and signature-theme concepts.
++
++The software and theme foundation was engineered collaboratively with **GPT-5.6 Sol by OpenAI** as an AI engineering assistant under JP99's direction. The six official signature themes are original project assets. Mac Inspired and Windows Inspired are independent, unaffiliated Linux themes and do not contain vendor branding.
++
++Community contributions retain their own authorship and provenance. Remixes must preserve attribution and license information required by their source components.
+diff --git a/LICENSE b/LICENSE
+new file mode 100644
+index 0000000..f288702
+--- /dev/null
++++ b/LICENSE
+@@ -0,0 +1,674 @@
++                    GNU GENERAL PUBLIC LICENSE
++                       Version 3, 29 June 2007
++
++ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
++ Everyone is permitted to copy and distribute verbatim copies
++ of this license document, but changing it is not allowed.
++
++                            Preamble
++
++  The GNU General Public License is a free, copyleft license for
++software and other kinds of works.
++
++  The licenses for most software and other practical works are designed
++to take away your freedom to share and change the works.  By contrast,
++the GNU General Public License is intended to guarantee your freedom to
++share and change all versions of a program--to make sure it remains free
++software for all its users.  We, the Free Software Foundation, use the
++GNU GPL for most of our software; it applies also to
++any other work released this way by its authors.  You can apply it to
++your programs, too.
++
++  When we speak of free software, we are referring to freedom, not
++price.  Our General Public Licenses are designed to make sure that you
++have the freedom to distribute copies of free software (and charge for
++them if you wish), that you receive source code or can get it if you
++want it, that you can change the software or use pieces of it in new
++free programs, and that you know you can do these things.
++
++  To protect your rights, we need to prevent others from denying you
++these rights or asking you to surrender the rights.  Therefore, you have
++certain responsibilities if you distribute copies of the software, or if
++you modify it: responsibilities to respect the freedom of others.
++
++  For example, if you distribute copies of such a program, whether
++gratis or for a fee, you must pass on to the recipients the same
++freedoms that you received.  You must make sure that they, too, receive
++or can get the source code.  And you must show them these terms so they
++know their rights.
++
++  Developers that use the GNU GPL protect your rights with two steps:
++(1) assert copyright on the software, and (2) offer you this License
++giving you legal permission to copy, distribute and/or modify it.
++
++  For the developers' and authors' protection, the GPL clearly explains
++that there is no warranty for this free software.  For both users' and
++authors' sake, the GPL requires that modified versions be marked as
++changed, so that their problems will not be attributed erroneously to
++authors of previous versions.
++
++  Some devices are designed to deny users access to install or run
++modified versions of the software inside them, although the manufacturer
++can do so.  This is fundamentally incompatible with the aim of
++protecting users' freedom to change the software.  The systematic
++pattern of such abuse occurs in the area of products for individuals
++to use, which is precisely where it is most unacceptable.  Therefore, we
++have designed this version of the GPL to prohibit the practice for those
++products.  If such problems arise substantially in other domains, we
++stand ready to extend this provision to those domains in future versions
++of the GPL, as needed to protect the freedom of users.
++
++  Finally, every program is threatened constantly by software patents.
++States should not allow patents to restrict development and use of
++software on general-purpose computers, but in those that do, we wish to
++avoid the special danger that patents applied to a free program could
++make it effectively proprietary.  To prevent this, the GPL assures that
++patents cannot be used to render the program non-free.
++
++  The precise terms and conditions for copying, distribution and
++modification follow.
++
++                       TERMS AND CONDITIONS
++
++  0. Definitions.
++
++  "This License" refers to version 3 of the GNU General Public License.
++
++  "Copyright" also means copyright-like laws that apply to other kinds of
++works, such as semiconductor masks.
++
++  "The Program" refers to any copyrightable work licensed under this
++License.  Each licensee is addressed as "you".  "Licensees" and
++"recipients" may be individuals or organizations.
++
++  To "modify" a work means to copy from or adapt all or part of the work
++in a fashion requiring copyright permission, other than the making of an
++exact copy.  The resulting work is called a "modified version" of the
++earlier work or a work "based on" the earlier work.
++
++  A "covered work" means either the unmodified Program or a work based
++on the Program.
++
++  To "propagate" a work means to do anything with it that, without
++permission, would make you directly or secondarily liable for
++infringement under applicable copyright law, except executing it on a
++computer or modifying a private copy.  Propagation includes copying,
++distribution (with or without modification), making available to the
++public, and in some countries other activities as well.
++
++  To "convey" a work means any kind of propagation that enables other
++parties to make or receive copies.  Mere interaction with a user through
++a computer network, with no transfer of a copy, is not conveying.
++
++  An interactive user interface displays "Appropriate Legal Notices"
++to the extent that it includes a convenient and prominently visible
++feature that (1) displays an appropriate copyright notice, and (2)
++tells the user that there is no warranty for the work (except to the
++extent that warranties are provided), that licensees may convey the
++work under this License, and how to view a copy of this License.  If
++the interface presents a list of user commands or options, such as a
++menu, a prominent item in the list meets this criterion.
++
++  1. Source Code.
++
++  The "source code" for a work means the preferred form of the work
++for making modifications to it.  "Object code" means any non-source
++form of a work.
++
++  A "Standard Interface" means an interface that either is an official
++standard defined by a recognized standards body, or, in the case of
++interfaces specified for a particular programming language, one that
++is widely used among developers working in that language.
++
++  The "System Libraries" of an executable work include anything, other
++than the work as a whole, that (a) is included in the normal form of
++packaging a Major Component, but which is not part of that Major
++Component, and (b) serves only to enable use of the work with that
++Major Component, or to implement a Standard Interface for which an
++implementation is available to the public in source code form.  A
++"Major Component", in this context, means a major essential component
++(kernel, window system, and so on) of the specific operating system
++(if any) on which the executable work runs, or a compiler used to
++produce the work, or an object code interpreter used to run it.
++
++  The "Corresponding Source" for a work in object code form means all
++the source code needed to generate, install, and (for an executable
++work) run the object code and to modify the work, including scripts to
++control those activities.  However, it does not include the work's
++System Libraries, or general-purpose tools or generally available free
++programs which are used unmodified in performing those activities but
++which are not part of the work.  For example, Corresponding Source
++includes interface definition files associated with source files for
++the work, and the source code for shared libraries and dynamically
++linked subprograms that the work is specifically designed to require,
++such as by intimate data communication or control flow between those
++subprograms and other parts of the work.
++
++  The Corresponding Source need not include anything that users
++can regenerate automatically from other parts of the Corresponding
++Source.
++
++  The Corresponding Source for a work in source code form is that
++same work.
++
++  2. Basic Permissions.
++
++  All rights granted under this License are granted for the term of
++copyright on the Program, and are irrevocable provided the stated
++conditions are met.  This License explicitly affirms your unlimited
++permission to run the unmodified Program.  The output from running a
++covered work is covered by this License only if the output, given its
++content, constitutes a covered work.  This License acknowledges your
++rights of fair use or other equivalent, as provided by copyright law.
++
++  You may make, run and propagate covered works that you do not
++convey, without conditions so long as your license otherwise remains
++in force.  You may convey covered works to others for the sole purpose
++of having them make modifications exclusively for you, or provide you
++with facilities for running those works, provided that you comply with
++the terms of this License in conveying all material for which you do
++not control copyright.  Those thus making or running the covered works
++for you must do so exclusively on your behalf, under your direction
++and control, on terms that prohibit them from making any copies of
++your copyrighted material outside their relationship with you.
++
++  Conveying under any other circumstances is permitted solely under
++the conditions stated below.  Sublicensing is not allowed; section 10
++makes it unnecessary.
++
++  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
++
++  No covered work shall be deemed part of an effective technological
++measure under any applicable law fulfilling obligations under article
++11 of the WIPO copyright treaty adopted on 20 December 1996, or
++similar laws prohibiting or restricting circumvention of such
++measures.
++
++  When you convey a covered work, you waive any legal power to forbid
++circumvention of technological measures to the extent such circumvention
++is effected by exercising rights under this License with respect to
++the covered work, and you disclaim any intention to limit operation or
++modification of the work as a means of enforcing, against the work's
++users, your or third parties' legal rights to forbid circumvention of
++technological measures.
++
++  4. Conveying Verbatim Copies.
++
++  You may convey verbatim copies of the Program's source code as you
++receive it, in any medium, provided that you conspicuously and
++appropriately publish on each copy an appropriate copyright notice;
++keep intact all notices stating that this License and any
++non-permissive terms added in accord with section 7 apply to the code;
++keep intact all notices of the absence of any warranty; and give all
++recipients a copy of this License along with the Program.
++
++  You may charge any price or no price for each copy that you convey,
++and you may offer support or warranty protection for a fee.
++
++  5. Conveying Modified Source Versions.
++
++  You may convey a work based on the Program, or the modifications to
++produce it from the Program, in the form of source code under the
++terms of section 4, provided that you also meet all of these conditions:
++
++    a) The work must carry prominent notices stating that you modified
++    it, and giving a relevant date.
++
++    b) The work must carry prominent notices stating that it is
++    released under this License and any conditions added under section
