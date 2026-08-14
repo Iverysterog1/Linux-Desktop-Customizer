@@ -1,0 +1,79 @@
+name: Final source sync
+
+on:
+  push:
+    branches: [main]
+    paths: ['final-sync/READY']
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync reviewed final text files and remove import scaffolding
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin source-import-2:refs/remotes/origin/source-import-2
+          git show origin/source-import-2:.github/workflows/ci.yml > .github/workflows/ci.yml
+          git show origin/source-import-2:.gitignore > .gitignore
+          git show origin/source-import-2:README.md > README.md
+          mkdir -p docs
+          git show origin/source-import-2:docs/VALIDATION.md > docs/VALIDATION.md
+
+          rm -rf bootstrap import-bin import-parts import-tunnel final-sync
+          rm -f .github/workflows/bootstrap.yml
+          rm -f .github/workflows/finalize-from-tunnel.yml
+          rm -f .github/workflows/finalize-reviewed-source.yml
+          rm -f .github/workflows/promote-source.yml
+          rm -f .github/workflows/sync-final-source.yml
+
+      - name: Verify final repository shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f go.mod
+          test -f cmd/ltc/main.go
+          test -f cmd/ltc-ui/main.go
+          test -f assets/theme-previews/fire.png
+          test -f assets/theme-previews/water.png
+          test -f assets/theme-previews/wind.png
+          test -f assets/theme-previews/earth.png
+          test -f assets/theme-previews/mac-inspired.png
+          test -f assets/theme-previews/windows-inspired.png
+          test -f themes/official/fire/preview.png
+          test -f themes/official/water/preview.png
+          test -f themes/official/wind/preview.png
+          test -f themes/official/earth/preview.png
+          test -f themes/official/mac-inspired/preview.png
+          test -f themes/official/windows-inspired/preview.png
+          test ! -e bootstrap
+          test ! -e import-bin
+          test ! -e import-parts
+          test ! -e import-tunnel
+
+          go test ./... -count=1
+          go vet ./...
+          go build ./cmd/ltc
+          go build ./cmd/ltc-ui
+          bash -n packaging/install-user.sh packaging/uninstall-user.sh
+          git diff --check
+
+      - name: Commit final public repository state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'JP99'
+          git config user.email '314643088+Iverysterog1@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'Finalize public repository structure and CI'
+          git push origin main
