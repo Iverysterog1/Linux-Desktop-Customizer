@@ -19,7 +19,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -h -v '^#' bootstrap/payload.part.*.b64 | base64 --decode > /tmp/ldc-source.tar.xz
+          {
+            for i in 00 01 02 03; do
+              cat "bootstrap/payload.part.${i}.b64"
+              printf '\n'
+            done
+            for i in 04 05 06 07 08 09 10 11; do
+              for f in bootstrap/payload.part.${i}.seg*.b64; do
+                sed '/^#/d' "$f"
+                printf '\n'
+              done
+            done
+          } | base64 --decode > /tmp/ldc-source.tar.xz
           echo '3146a1e26e91f23cc8fb333e74a904b4b05b9c624e26cc0837d1a414d446eb36  /tmp/ldc-source.tar.xz' | sha256sum -c -
           mkdir -p /tmp/ldc-source
           tar -xJf /tmp/ldc-source.tar.xz -C /tmp/ldc-source
@@ -60,7 +71,7 @@ GitHub Actions regenerates the payload before tests and before packaging Linux r
 '''
           new = '''## Complete official theme assets
 
-The repository includes the complete `themes/official/` tree together with the generator, design logic and preview assets. This keeps the public repository self-contained: a clone contains the source code **and** the current official Fire, Water, Wind, Earth, Mac Inspired and Windows Inspired theme payloads.
+The repository includes the complete `themes/official/` tree together with the generator, design logic and preview assets. A clone therefore contains the source code **and** the current official Fire, Water, Wind, Earth, Mac Inspired and Windows Inspired theme payloads.
 
 The assets remain reproducible through `scripts/generate_signature_themes.py`. A clean regeneration was checked against the supplied `0.9.0-visual-composer` source package: all **379 generated files** were recreated with the same paths and SHA-256 hashes.
 
