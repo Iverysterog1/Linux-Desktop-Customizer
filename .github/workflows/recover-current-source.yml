@@ -11,7 +11,7 @@ permissions:
 jobs:
   recover:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,41 +21,35 @@ jobs:
         with:
           go-version: '1.23.x'
 
-      - name: Decode repository-owned source package
+      - name: Decode verified repository-owned XZ source package
         shell: bash
         run: |
           set -Eeuo pipefail
-          test -f bootstrap/source.part.00.b64
-          cat bootstrap/source.part.*.b64 | tr -d '\r\n\t ' | base64 -d > /tmp/ldc-source.tar.gz
-          file /tmp/ldc-source.tar.gz
-          sha256sum /tmp/ldc-source.tar.gz
-          gzip -t /tmp/ldc-source.tar.gz
+          test -f bootstrap/payload.part.00.b64
           mkdir -p /tmp/ldc-source
-          tar -xzf /tmp/ldc-source.tar.gz -C /tmp/ldc-source
+          cat bootstrap/payload.part.*.b64 | base64 --decode > /tmp/ldc-source.tar.xz
+          echo '3146a1e26e91f23cc8fb333e74a904b4b05b9c624e26cc0837d1a414d446eb36  /tmp/ldc-source.tar.xz' | sha256sum -c -
+          xz -t /tmp/ldc-source.tar.xz
+          tar -xJf /tmp/ldc-source.tar.xz -C /tmp/ldc-source
           echo '=== recovered root ==='
-          find /tmp/ldc-source -maxdepth 2 -type f | sort | head -120
+          find /tmp/ldc-source -maxdepth 2 -type f | sort | head -160
+          test -f /tmp/ldc-source/go.mod
+          test -d /tmp/ldc-source/cmd
+          test -d /tmp/ldc-source/internal
 
-      - name: Publish recovered source branch
+      - name: Replace workspace with recovered source
         shell: bash
         run: |
           set -Eeuo pipefail
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a /tmp/ldc-source/. .
-          git config user.name 'JP99'
-          git config user.email '314643088+Iverysterog1@users.noreply.github.com'
-          git add -A
-          TREE="$(git write-tree)"
-          PARENT="$(git rev-parse origin/main)"
-          COMMIT="$(printf '%s\n' 'Recover packaged source for effects audit' | git commit-tree "$TREE" -p "$PARENT")"
-          git push --force origin "$COMMIT:refs/heads/recovered-source"
-          echo "RECOVERED_COMMIT=$COMMIT"
 
       - name: Validate recovered source
         shell: bash
         run: |
           set -Eeuo pipefail
           echo '=== version ==='
-          cat VERSION || true
+          cat VERSION
           echo '=== go test ==='
           go test ./... -count=1
           echo '=== go vet ==='
@@ -65,5 +59,21 @@ jobs:
           echo '=== builds ==='
           go build -o /tmp/ltc ./cmd/ltc
           go build -o /tmp/ltc-ui ./cmd/ltc-ui
+          echo '=== shell syntax ==='
+          test ! -f packaging/linux/install-user.sh || bash -n packaging/linux/install-user.sh
+          test ! -f packaging/linux/uninstall-user.sh || bash -n packaging/linux/uninstall-user.sh
           echo '=== whitespace ==='
           git diff --check
+
+      - name: Publish validated recovered source branch
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          git config user.name 'JP99'
+          git config user.email '314643088+Iverysterog1@users.noreply.github.com'
+          git add -A
+          TREE="$(git write-tree)"
+          PARENT="$(git rev-parse origin/main)"
+          COMMIT="$(printf '%s\n' 'Recover and validate packaged source for effects audit' | git commit-tree "$TREE" -p "$PARENT")"
+          git push --force origin "$COMMIT:refs/heads/recovered-source"
+          echo "RECOVERED_COMMIT=$COMMIT"
