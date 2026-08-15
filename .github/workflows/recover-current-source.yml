@@ -1,0 +1,69 @@
+name: Recover current source package
+
+on:
+  push:
+    paths:
+      - 'source-recovery/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Decode repository-owned source package
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test -f bootstrap/source.part.00.b64
+          cat bootstrap/source.part.*.b64 | tr -d '\r\n\t ' | base64 -d > /tmp/ldc-source.tar.gz
+          file /tmp/ldc-source.tar.gz
+          sha256sum /tmp/ldc-source.tar.gz
+          gzip -t /tmp/ldc-source.tar.gz
+          mkdir -p /tmp/ldc-source
+          tar -xzf /tmp/ldc-source.tar.gz -C /tmp/ldc-source
+          echo '=== recovered root ==='
+          find /tmp/ldc-source -maxdepth 2 -type f | sort | head -120
+
+      - name: Publish recovered source branch
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/ldc-source/. .
+          git config user.name 'JP99'
+          git config user.email '314643088+Iverysterog1@users.noreply.github.com'
+          git add -A
+          TREE="$(git write-tree)"
+          PARENT="$(git rev-parse origin/main)"
+          COMMIT="$(printf '%s\n' 'Recover packaged source for effects audit' | git commit-tree "$TREE" -p "$PARENT")"
+          git push --force origin "$COMMIT:refs/heads/recovered-source"
+          echo "RECOVERED_COMMIT=$COMMIT"
+
+      - name: Validate recovered source
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          echo '=== version ==='
+          cat VERSION || true
+          echo '=== go test ==='
+          go test ./... -count=1
+          echo '=== go vet ==='
+          go vet ./...
+          echo '=== race ==='
+          go test -race ./... -count=1
+          echo '=== builds ==='
+          go build -o /tmp/ltc ./cmd/ltc
+          go build -o /tmp/ltc-ui ./cmd/ltc-ui
+          echo '=== whitespace ==='
+          git diff --check
