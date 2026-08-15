@@ -21,13 +21,28 @@ jobs:
         with:
           go-version: '1.23.x'
 
-      - name: Decode verified repository-owned XZ source package
+      - name: Reconstruct verified source package from Git history
         shell: bash
         run: |
           set -Eeuo pipefail
-          test -f bootstrap/payload.part.00.b64
+          SRC_COMMIT='0e7bf56bfe90a583c6117b13e88ed8416b5cd564'
+          git cat-file -e "${SRC_COMMIT}^{commit}"
           mkdir -p /tmp/ldc-source
-          cat bootstrap/payload.part.*.b64 | base64 --decode > /tmp/ldc-source.tar.xz
+          {
+            for i in 00 01 02 03; do
+              git show "${SRC_COMMIT}:bootstrap/payload.part.${i}.b64"
+              printf '\n'
+            done
+            for i in 04 05 06 07 08 09 10 11; do
+              git ls-tree -r --name-only "$SRC_COMMIT" bootstrap \
+                | grep -E "^bootstrap/payload\.part\.${i}\.seg[^/]*\.b64$" \
+                | sort \
+                | while IFS= read -r f; do
+                    git show "${SRC_COMMIT}:${f}" | sed '/^#/d'
+                    printf '\n'
+                  done
+            done
+          } | base64 --decode > /tmp/ldc-source.tar.xz
           echo '3146a1e26e91f23cc8fb333e74a904b4b05b9c624e26cc0837d1a414d446eb36  /tmp/ldc-source.tar.xz' | sha256sum -c -
           xz -t /tmp/ldc-source.tar.xz
           tar -xJf /tmp/ldc-source.tar.xz -C /tmp/ldc-source
