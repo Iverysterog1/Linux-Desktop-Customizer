@@ -1,0 +1,31 @@
+name: Inspect preserved source package
+
+on:
+  push:
+    branches: [publish-0.11-effects-composer]
+    paths:
+      - '.github/workflows/inspect-preserved-source.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect preserved source fragments
+        shell: bash
+        run: |
+          set -u
+          echo '=== source fragments ==='
+          ls -lh bootstrap/source.part.*.b64
+          cat bootstrap/source.part.*.b64 | tr -d '\r\n\t ' | base64 -d > /tmp/source.bin || true
+          ls -lh /tmp/source.bin || true
+          file /tmp/source.bin || true
+          sha256sum /tmp/source.bin || true
+          echo '=== archive probes ==='
+          gzip -t /tmp/source.bin && echo GZIP_OK || true
+          xz -t /tmp/source.bin && echo XZ_OK || true
+          unzip -t /tmp/source.bin >/tmp/unzip.txt 2>&1 && { echo ZIP_OK; head -20 /tmp/unzip.txt; } || true
+          tar -tf /tmp/source.bin >/tmp/tar.txt 2>&1 && { echo TAR_OK; head -80 /tmp/tar.txt; } || { echo TAR_FAIL; head -20 /tmp/tar.txt; }
