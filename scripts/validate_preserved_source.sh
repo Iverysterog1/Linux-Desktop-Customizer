@@ -23,8 +23,16 @@ command -v sha256sum >/dev/null
 git cat-file -e "${SOURCE_COMMIT}^{commit}"
 
 : > "$WORK_DIR/source.b64"
-for i in $(seq -w 0 $((PART_COUNT - 1))); do
+# Do not use `seq -w 0 9` here: GNU seq only pads when the largest endpoint
+# needs more than one digit, producing part0.b64 instead of the preserved
+# part00.b64 naming convention. Format the index explicitly and test it.
+for ((index = 0; index < PART_COUNT; index++)); do
+  printf -v i '%02d' "$index"
   path="source-package/part${i}.b64"
+  if [[ ! "$path" =~ ^source-package/part[0-9]{2}\.b64$ ]]; then
+    echo "ERROR: invalid source fragment path generated: $path" >&2
+    exit 1
+  fi
   git cat-file -e "${SOURCE_COMMIT}:${path}"
   bytes=$(git cat-file -s "${SOURCE_COMMIT}:${path}")
   if [[ "$bytes" -ne 16000 ]]; then
