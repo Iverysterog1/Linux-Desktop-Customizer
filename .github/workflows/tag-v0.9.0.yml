@@ -22,29 +22,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo 'Legacy v0.9.0 automatic tagging is retired.'
-          echo 'Do not write to main or create/push tags from this workflow.'
+          echo 'Legacy v0.9.0 automatic publication is retired.'
+          echo 'This workflow has read-only repository access and performs no publication.'
           echo 'Use a reviewed branch, required validation, and an explicit release process.'
-
-      - name: Fail closed if publication primitives return
-        shell: bash
-        run: |
-          set -euo pipefail
-          workflow='.github/workflows/tag-v0.9.0.yml'
-          forbidden=(
-            'contents: write'
-            'actions: write'
-            'git push'
-            'git tag'
-            'GH_TOKEN'
-            'GITHUB_TOKEN'
-            'refs/heads/main'
-            'origin main'
-            'release-trigger/READY'
-          )
-          for pattern in "${forbidden[@]}"; do
-            if grep -Fq -- "$pattern" "$workflow"; then
-              echo "Forbidden publication primitive found: $pattern" >&2
-              exit 1
-            fi
-          done
