@@ -6,13 +6,26 @@ readonly EXPECTED_VERSION='0.9.0-beta.1'
 readonly WORK_DIR="${WORK_DIR:-$(mktemp -d)}"
 readonly ARCHIVE="$WORK_DIR/ldc-beta.tar.xz"
 readonly SOURCE="$WORK_DIR/source"
+PHASE='startup'
+CURRENT_BLOB='none'
 
 cleanup() { [[ "${KEEP_WORK_DIR:-0}" == 1 ]] || rm -rf "$WORK_DIR"; }
+on_error() {
+  local rc=$?
+  echo "FAIL: phase=$PHASE blob=$CURRENT_BLOB exit=$rc" >&2
+  if [[ -f "$ARCHIVE" ]]; then
+    echo "archive_bytes=$(wc -c < "$ARCHIVE")" >&2
+    echo "archive_sha256=$(sha256sum "$ARCHIVE" | awk '{print $1}')" >&2
+    echo "expected_sha256=$EXPECTED_SHA256" >&2
+  fi
+  exit "$rc"
+}
 trap cleanup EXIT
+trap on_error ERR
 
 : "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
 : "${GH_TOKEN:?GH_TOKEN is required}"
-for command in gh base64 sha256sum xz tar go; do command -v "$command" >/dev/null; done
+for command in gh base64 sha256sum xz tar go awk wc; do command -v "$command" >/dev/null; done
 
 blobs=(
 617acebce23f59124269e03c65f0fd6bb3b1be70 cf03a0e7202be9a3f0b7897a704b4087c9814719
@@ -45,28 +58,49 @@ a31d70c3ebaa849175f09a20c50aa2eb8a2ce116 41f20cd8718f2d970ca8fbfbdb34f6e2b9ec89a
 4e63304fd7f0359fc6520023a96d8ef8f58e4455 7460c60ac89de3842808a3bc5e99ccde72898b37
 )
 
+PHASE='manifest-validation'
 [[ ${#blobs[@]} -eq 56 ]] || { echo "ERROR: expected 56 blob ids, got ${#blobs[@]}" >&2; exit 1; }
 : > "$ARCHIVE"
+PHASE='blob-reconstruction'
+index=0
 for blob in "${blobs[@]}"; do
-  [[ "$blob" =~ ^[0-9a-f]{40}$ ]] || { echo "ERROR: malformed blob id" >&2; exit 1; }
+  index=$((index + 1))
+  CURRENT_BLOB="$blob"
+  [[ "$blob" =~ ^[0-9a-f]{40}$ ]] || { echo "ERROR: malformed blob id at index $index" >&2; exit 1; }
+  echo "reconstruct_blob=$index/56 sha=$blob"
   gh api "repos/$GITHUB_REPOSITORY/git/blobs/$blob" --jq .content | tr -d '\n' | base64 --decode >> "$ARCHIVE"
 done
+CURRENT_BLOB='none'
 
-echo "$EXPECTED_SHA256  $ARCHIVE" | sha256sum -c -
+PHASE='archive-hash'
+observed_sha="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
+echo "archive_bytes=$(wc -c < "$ARCHIVE")"
+echo "archive_sha256=$observed_sha"
+echo "expected_sha256=$EXPECTED_SHA256"
+[[ "$observed_sha" == "$EXPECTED_SHA256" ]]
+
+PHASE='xz-integrity'
 xz -t "$ARCHIVE"
+PHASE='archive-path-safety'
 tar -tJf "$ARCHIVE" > "$WORK_DIR/files.txt"
 ! grep -Eq '(^|/)\.\.(/|$)|^/' "$WORK_DIR/files.txt"
+PHASE='extraction'
 mkdir -p "$SOURCE"
 tar -xJf "$ARCHIVE" -C "$SOURCE"
+PHASE='source-contract'
 [[ "$(cat "$SOURCE/VERSION")" == "$EXPECTED_VERSION" ]]
 for path in LICENSE README.md go.mod; do [[ -f "$SOURCE/$path" ]]; done
-(
-  cd "$SOURCE"
-  go test ./... -count=1
-  go vet ./...
-  go test -race ./... -count=1
-  go build -o /tmp/ltc ./cmd/ltc
-  go build -o /tmp/ltc-ui ./cmd/ltc-ui
-  bash -n packaging/linux/install-user.sh packaging/linux/uninstall-user.sh
-)
+PHASE='go-test'
+(cd "$SOURCE" && go test ./... -count=1)
+PHASE='go-vet'
+(cd "$SOURCE" && go vet ./...)
+PHASE='go-race'
+(cd "$SOURCE" && go test -race ./... -count=1)
+PHASE='cli-build'
+(cd "$SOURCE" && go build -o /tmp/ltc ./cmd/ltc)
+PHASE='ui-build'
+(cd "$SOURCE" && go build -o /tmp/ltc-ui ./cmd/ltc-ui)
+PHASE='installer-syntax'
+(cd "$SOURCE" && bash -n packaging/linux/install-user.sh packaging/linux/uninstall-user.sh)
+PHASE='complete'
 echo "PASS: historical beta blob archive is complete, hash-verified, testable and buildable."
