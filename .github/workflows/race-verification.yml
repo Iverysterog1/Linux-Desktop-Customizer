@@ -1,40 +1,32 @@
-name: Race detector verification
+name: Race detector verification (retired publisher)
 
 on:
-  push:
-    branches: [main]
-    paths: ['publication-race/READY']
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   race:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v5
         with:
           go-version: '1.23.x'
       - name: Run Go race detector
         run: go test -race ./...
-      - name: Record successful race verification
+      - name: Verify workflow remains read-only
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('docs/PUBLICATION_STATUS.md')
-          s = p.read_text()
-          marker = '- `go test -race ./...` passes;\n'
-          if marker not in s:
-              s = s.replace('- `go vet ./...` passes;\n', '- `go vet ./...` passes;\n' + marker)
-              p.write_text(s)
-          PY
-          rm -rf publication-race
-          rm -f .github/workflows/race-verification.yml
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'Record race detector verification'
-          git push origin main
+          workflow='.github/workflows/race-verification.yml'
+          forbidden='contents:[[:space:]]*write|actions:[[:space:]]*write|git[[:space:]]+push|--force|GH_TOKEN|GITHUB_TOKEN|git[[:space:]]+commit|publication-race/READY|branches:[[:space:]]*\[main\]'
+          if grep -En -- "$forbidden" "$workflow"; then
+            echo 'ERROR: privileged publication primitive reintroduced into race verification workflow.' >&2
+            exit 1
+          fi
+          echo 'PASS: race verification workflow is read-only and has no direct publication path.'
