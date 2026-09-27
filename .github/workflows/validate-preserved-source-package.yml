@@ -1,0 +1,24 @@
+name: Validate preserved source package
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/validate-preserved-source-package.sh'
+      - '.github/workflows/validate-preserved-source-package.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Preserve recovery evidence without promotion
+        run: |
+          echo 'The preserved 0.11 recovery stream is currently known to fail strict archive integrity validation.'
+          echo 'Canonical promotion is blocked until authoritative complete bytes are recovered and verified.'
