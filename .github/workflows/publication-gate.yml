@@ -1,7 +1,7 @@
 name: Publication verification gate (read-only)
 
 # SECURITY: This legacy publication gate previously committed verification output
-# directly to main. It is intentionally retained only as an on-demand verifier.
+# directly to the default branch. It is intentionally retained only as an on-demand verifier.
 on:
   workflow_dispatch:
 
