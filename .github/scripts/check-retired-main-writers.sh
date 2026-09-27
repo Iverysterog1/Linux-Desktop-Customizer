@@ -9,14 +9,15 @@ files=(
 
 for file in "${files[@]}"; do
   test -f "$file"
+  executable="$(sed '/^[[:space:]]*#/d' "$file")"
 
   # These retired workflows must remain manual and read-only.
-  grep -Eq '^[[:space:]]*workflow_dispatch:' "$file"
-  grep -Eq '^[[:space:]]*contents:[[:space:]]*read[[:space:]]*$' "$file"
+  grep -Eq '^[[:space:]]*workflow_dispatch:' <<<"$executable"
+  grep -Eq '^[[:space:]]*contents:[[:space:]]*read[[:space:]]*$' <<<"$executable"
 
   # Fail closed if executable YAML regains an automatic push trigger,
   # write permission, or repository/tag publication command.
-  if grep -Eq '^[[:space:]]+push:[[:space:]]*$|^[[:space:]]*contents:[[:space:]]*write[[:space:]]*$|^[[:space:]]+(git[[:space:]]+)?push([[:space:]]|$)|git[[:space:]]+push([[:space:]]|$)' "$file"; then
+  if grep -Eq '^[[:space:]]+push:[[:space:]]*$|^[[:space:]]*contents:[[:space:]]*write[[:space:]]*$|git[[:space:]]+push([[:space:]]|$)' <<<"$executable"; then
     echo "unsafe retired workflow primitive detected: $file" >&2
     exit 1
   fi
