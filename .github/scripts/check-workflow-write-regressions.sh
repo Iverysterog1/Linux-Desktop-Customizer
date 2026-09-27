@@ -12,7 +12,12 @@ for file in "${files[@]}"; do
   [[ "$file" == .github/workflows/*.yml || "$file" == .github/workflows/*.yaml ]] || continue
   [[ -f "$file" ]] || continue
   echo "Auditing $file"
-  if grep -En '^[[:space:]]*(contents|actions|packages|id-token):[[:space:]]*write([[:space:]]|$)' "$file"; then failed=1; fi
+
+  # Canonical workflows are read-only by policy. Match every GitHub Actions
+  # permission key rather than a hand-maintained subset so a less common
+  # capability (checks, deployments, pull-requests, statuses, etc.) cannot
+  # silently regain write authority.
+  if grep -En '^[[:space:]]*[a-zA-Z][a-zA-Z0-9_-]*:[[:space:]]*write([[:space:]]|$)' "$file"; then failed=1; fi
   if grep -En 'git[[:space:]]+push|--force([^[:alnum:]-]|$)|:[[:space:]]*main([[:space:]"'"']|$)' "$file"; then failed=1; fi
   if grep -En '^[[:space:]]*(GH_TOKEN|GITHUB_TOKEN):' "$file"; then failed=1; fi
 done
