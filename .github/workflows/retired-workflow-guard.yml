@@ -1,0 +1,24 @@
+name: Retired workflow security guard
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/finalize-reviewed-source.yml'
+      - '.github/workflows/sync-final-source.yml'
+      - '.github/workflows/tag-v0.9.0.yml'
+      - '.github/scripts/check-retired-main-writers.sh'
+      - '.github/workflows/retired-workflow-guard.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check retired workflows
+        run: bash .github/scripts/check-retired-main-writers.sh
