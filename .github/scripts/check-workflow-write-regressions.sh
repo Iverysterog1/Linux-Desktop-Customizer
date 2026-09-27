@@ -13,7 +13,7 @@ for file in "${files[@]}"; do
   [[ -f "$file" ]] || continue
   echo "Auditing $file"
   if grep -En '^[[:space:]]*(contents|actions|packages|id-token):[[:space:]]*write([[:space:]]|$)' "$file"; then failed=1; fi
-  if grep -En 'git[[:space:]]+push|--force([^[:alnum:]-]|$)|:[[:space:]]*main([[:space:]"'"']|$)' "$file"; then failed=1; fi
+  if grep -En "git[[:space:]]+push|--force([^[:alnum:]-]|$)|:[[:space:]]*main([[:space:]\"']|$)" "$file"; then failed=1; fi
   if grep -En '^[[:space:]]*(GH_TOKEN|GITHUB_TOKEN):' "$file"; then failed=1; fi
 done
 
