@@ -16,5 +16,5 @@ jobs:
         run: |
           set -euo pipefail
           echo 'This legacy repository bootstrap publisher is intentionally retired.'
-          echo 'It must not reconstruct or force-push the default branch.'
+          echo 'It must not reconstruct or publish directly to the default branch.'
           echo 'Source changes must use the canonical development line, validation, and reviewed pull requests.'
