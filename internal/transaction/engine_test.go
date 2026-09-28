@@ -152,6 +152,64 @@ func TestPartialFailureRollsBackEarlierChanges(t *testing.T) {
 	}
 }
 
+func TestValidationMismatchRollsBackCurrentAndEarlierChanges(t *testing.T) {
+	t.Parallel()
+	validation := &validationAdapter{before: "before", exists: true, mode: validationMismatch}
+	engine, managed := newTestEngine(t, validation)
+	ctx := context.Background()
+	plan := Plan{Changes: []Change{
+		{Adapter: "local-file", Key: "theme/name", Action: ActionSet, Value: "dark"},
+		{Adapter: "validation", Key: "setting", Action: ActionSet, Value: "after"},
+	}}
+
+	tx, err := engine.Apply(ctx, plan)
+	if err == nil {
+		t.Fatal("expected validation mismatch")
+	}
+	if tx.Status != StatusRolledBack {
+		t.Fatalf("status = %q, want %q; err=%v", tx.Status, StatusRolledBack, err)
+	}
+	if validation.value != "before" || !validation.exists {
+		t.Fatalf("current change not restored: value=%q exists=%v", validation.value, validation.exists)
+	}
+	_, exists, readErr := managed.Read(ctx, "theme/name")
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	if exists {
+		t.Fatal("earlier change survived validation mismatch")
+	}
+}
+
+func TestValidationReadFailureRollsBackCurrentAndEarlierChanges(t *testing.T) {
+	t.Parallel()
+	validation := &validationAdapter{before: "before", exists: true, mode: validationReadFailure}
+	engine, managed := newTestEngine(t, validation)
+	ctx := context.Background()
+	plan := Plan{Changes: []Change{
+		{Adapter: "local-file", Key: "theme/name", Action: ActionSet, Value: "dark"},
+		{Adapter: "validation", Key: "setting", Action: ActionSet, Value: "after"},
+	}}
+
+	tx, err := engine.Apply(ctx, plan)
+	if err == nil {
+		t.Fatal("expected validation read failure")
+	}
+	if tx.Status != StatusRolledBack {
+		t.Fatalf("status = %q, want %q; err=%v", tx.Status, StatusRolledBack, err)
+	}
+	if validation.value != "before" || !validation.exists {
+		t.Fatalf("current change not restored: value=%q exists=%v", validation.value, validation.exists)
+	}
+	_, exists, readErr := managed.Read(ctx, "theme/name")
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	if exists {
+		t.Fatal("earlier change survived validation read failure")
+	}
+}
+
 type failingAdapter struct{}
 
 func (*failingAdapter) Name() string { return "fail" }
@@ -166,4 +224,62 @@ func (*failingAdapter) Set(context.Context, string, string) error {
 }
 func (*failingAdapter) Unset(context.Context, string) error {
 	return errors.New("injected failure")
+}
+
+type validationMode int
+
+const (
+	validationMismatch validationMode = iota
+	validationReadFailure
+)
+
+type validationAdapter struct {
+	before string
+	value  string
+	exists bool
+	set    bool
+	mode   validationMode
+}
+
+func (*validationAdapter) Name() string { return "validation" }
+func (*validationAdapter) Capabilities(context.Context) []capability.Capability {
+	return []capability.Capability{{ID: "test-validation", Supported: true}}
+}
+func (a *validationAdapter) Read(context.Context, string) (string, bool, error) {
+	if a.set {
+		switch a.mode {
+		case validationReadFailure:
+			a.set = false
+			return "", false, errors.New("injected validation read failure")
+		case validationMismatch:
+			return "wrong", true, nil
+		}
+	}
+	if a.value == "" && a.exists {
+		return a.before, true, nil
+	}
+	return a.value, a.exists, nil
+}
+func (a *validationAdapter) Set(_ context.Context, _ string, value string) error {
+	if a.set {
+		a.value = value
+		a.exists = true
+		a.set = false
+		return nil
+	}
+	if value == a.before {
+		a.value = value
+		a.exists = true
+		return nil
+	}
+	a.value = value
+	a.exists = true
+	a.set = true
+	return nil
+}
+func (a *validationAdapter) Unset(context.Context, string) error {
+	a.value = ""
+	a.exists = false
+	a.set = false
+	return nil
 }
