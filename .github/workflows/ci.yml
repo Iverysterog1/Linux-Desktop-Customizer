@@ -9,6 +9,7 @@ on:
       - '**/*.go'
       - 'packaging/**'
       - 'scripts/test-install-user.sh'
+      - 'scripts/validate-desktop-entry.sh'
       - '.github/workflows/ci.yml'
   workflow_dispatch:
 
@@ -45,10 +46,11 @@ jobs:
           /tmp/ltc version
           /tmp/ltc-ui
 
-      - name: Installer checks
+      - name: Installer and desktop integration checks
         run: |
           set -euo pipefail
-          bash -n packaging/install-user.sh packaging/uninstall-user.sh scripts/test-install-user.sh
+          bash -n packaging/install-user.sh packaging/uninstall-user.sh scripts/test-install-user.sh scripts/validate-desktop-entry.sh
+          bash scripts/validate-desktop-entry.sh
           bash scripts/test-install-user.sh
 
       - name: Repository diff check
