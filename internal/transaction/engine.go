@@ -111,7 +111,27 @@ func (e *Engine) Apply(ctx context.Context, plan Plan) (Transaction, error) {
 			_ = e.store.Save(tx)
 			return tx, fmt.Errorf("transaction: %s", tx.Error)
 		}
+
 		applied = append(applied, i)
+		value, exists, readErr := a.Read(ctx, rc.Change.Key)
+		if readErr != nil {
+			err = fmt.Errorf("read back: %w", readErr)
+		} else if rc.Change.Action == ActionSet && (!exists || value != rc.Change.Value) {
+			err = fmt.Errorf("read back mismatch")
+		} else if rc.Change.Action == ActionUnset && exists {
+			err = fmt.Errorf("read back mismatch")
+		}
+		if err != nil {
+			tx.Error = fmt.Sprintf("validate change %d: %v", i, err)
+			if rollbackErr := e.restore(ctx, tx, applied); rollbackErr != nil {
+				tx.Status = StatusRollbackFailed
+				tx.Error += "; rollback: " + rollbackErr.Error()
+			} else {
+				tx.Status = StatusRolledBack
+			}
+			_ = e.store.Save(tx)
+			return tx, fmt.Errorf("transaction: %s", tx.Error)
+		}
 	}
 
 	tx.Status = StatusApplied
