@@ -18,7 +18,7 @@ for file in "${files[@]}"; do
   # capability (checks, deployments, pull-requests, statuses, etc.) cannot
   # silently regain write authority.
   if grep -En '^[[:space:]]*[a-zA-Z][a-zA-Z0-9_-]*:[[:space:]]*write([[:space:]]|$)' "$file"; then failed=1; fi
-  if grep -En 'git[[:space:]]+push|--force([^[:alnum:]-]|$)|:[[:space:]]*main([[:space:]"'"']|$)' "$file"; then failed=1; fi
+  if grep -En "git[[:space:]]+push|--force([^[:alnum:]-]|$)|:[[:space:]]*main([[:space:]\"']|$)" "$file"; then failed=1; fi
   if grep -En '^[[:space:]]*(GH_TOKEN|GITHUB_TOKEN):' "$file"; then failed=1; fi
 done
 
