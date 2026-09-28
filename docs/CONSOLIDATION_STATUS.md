@@ -2,31 +2,31 @@
 
 Date: 2026-09-28
 
-## State
+## Final state
 
-**Canonical content consolidation: COMPLETE.**
-**Legacy pull-request/branch cleanup: in progress.**
+**Repository centralization: COMPLETE.**
 
-The only authoritative storage for this project is GitHub. There is no separate PC or external source tree to recover from.
+GitHub is the only surviving authoritative storage for this project.
 
-- Stable branch: `main` at `56fa162d076cbe96c3ebdca828f480070293708a` (untouched by consolidation).
-- Sole integration/source-of-truth line: `integration/canonical`.
-- PR #37 centralized every pre-existing classified workflow remediation, validator, documentation contribution, and preserved recovery fragment.
-- The immutable Action pinning from PR #38 is incorporated into the final cleanup line.
+- `integration/canonical` is the sole active source-of-truth and rebuild line.
+- `main` remains the preserved stable historical branch and was not rewritten by consolidation.
+- There are no open pull requests.
+- All superseded topic/history branches were deleted after their unique content was classified and preserved.
+- The repository now has exactly two branches: `main` and `integration/canonical`.
+- Legacy direct/force-publish workflows and obsolete READY trigger scaffolding are absent from the current canonical tree.
+- Repetitive consolidation documentation has been reduced to a compact canonical record.
+- Historical source fragments and failed recovery evidence remain preserved explicitly under `recovery-evidence/`, `source-package/`, validation scripts, Git history, and closed PR history.
 
-## Recovery truth
+## Validation evidence
 
-The original complete application source cannot be reconstructed from the GitHub bytes currently available:
+- Final consolidation workflow-regression guard: PASS, Actions run `36413972648`.
+- Superseded-branch cleanup: PASS, Actions run `36414812932`.
+- Historical three-part source recovery re-test: FAIL as expected, Actions run `36413607567`; pinned SHA-256 did not match and extraction was not attempted.
 
-1. The 56-object historical archive is missing authoritative blob `cfd027fdf53fcd403a020f7a934b74d0febdc98c`.
-2. The ten-part preserved XZ stream is truncated and fails integrity validation.
-3. The older three-part `bootstrap/source.part.*.b64` path was re-tested on GitHub Actions run `36413607567`; the reconstructed archive does **not** match its pinned SHA-256 `444f8803b764e2e7f709185428d1b519a44cd902291c40aef891cee8992413bd`.
-4. Git history contains no `source.part.03+` and only one readable `import-parts/part-000.patch`.
+## Recovery conclusion
 
-These failures are preserved as evidence. No bytes are invented or silently substituted.
+The complete original application source cannot be reconstructed from the GitHub bytes that remain. The historical recovery issue #2 is closed with this evidence preserved.
 
-## Decision
+The active P0 is issue #40: **rebuild complete application source on canonical foundation**.
 
-Do not keep waiting for a non-existent off-GitHub copy. Historical fragments are retained as evidence, but the next product phase is a **clean rebuild of the missing application source from the surviving specifications, README/history, patches and validated project requirements**.
-
-No release or promotion to `main` is authorized until that rebuilt source has tests, race checks, builds, installer/uninstaller checks and functional validation.
+Centralization is no longer a blocker. Product reconstruction is the next phase.
