@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PREFIX="${LTC_INSTALL_PREFIX:-${XDG_BIN_HOME:-$HOME/.local/bin}}"
+BIN_DIR="${LTC_INSTALL_PREFIX:-${XDG_BIN_HOME:-$HOME/.local/bin}}"
+DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+DESKTOP_ID="io.github.iverysterog1.LinuxDesktopCustomizer.desktop"
 
-rm -f -- "$PREFIX/ltc" "$PREFIX/ltc-ui"
-echo "Removed Linux Desktop Customizer commands from $PREFIX"
+rm -f -- "$BIN_DIR/ltc" "$BIN_DIR/ltc-ui"
+rm -f -- "$DATA_HOME/applications/$DESKTOP_ID"
+
+echo "Removed Linux Desktop Customizer user installation"

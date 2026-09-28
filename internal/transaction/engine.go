@@ -26,16 +26,13 @@ func NewEngine(registry *adapter.Registry, store *Store) (*Engine, error) {
 }
 
 func (e *Engine) Preview(ctx context.Context, plan Plan) (Preview, error) {
+	if err := ValidatePlan(plan); err != nil {
+		return Preview{}, err
+	}
+
 	out := Preview{Supported: true, Changes: make([]PreviewChange, 0, len(plan.Changes))}
 	for i, change := range plan.Changes {
 		pc := PreviewChange{Index: i, Change: change, Supported: true}
-		if err := validateChange(change); err != nil {
-			pc.Supported = false
-			pc.Reason = err.Error()
-			out.Supported = false
-			out.Changes = append(out.Changes, pc)
-			continue
-		}
 
 		a, ok := e.registry.Get(change.Adapter)
 		if !ok {

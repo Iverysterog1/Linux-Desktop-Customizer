@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Linux Desktop Customizer
+Comment=Preview, apply and undo Linux desktop personalization
+Exec=ltc-ui
+Terminal=false
+Categories=Settings;DesktopSettings;
+StartupNotify=true
