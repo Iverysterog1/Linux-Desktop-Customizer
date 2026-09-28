@@ -6,9 +6,12 @@
 - [x] Centralize changed-workflow write/direct-push regression guard.
 - [x] Absorb the #20 legacy main/tag writer retirement family.
 - [x] Preserve #5/#9 recovery blockers without promoting corrupt/incomplete input.
-- [ ] Absorb every unique remediation from #1/#3/#7/#8/#10-#18 not already represented.
+- [x] Assemble every unique legacy workflow remediation into one dedicated branch based on `integration/canonical`.
+- [ ] Obtain passing combined CI for the ten read-only workflow replacements and final guard.
+- [ ] Preserve or deliberately supersede the complete validators from #5/#9 and complete the no-loss review of #4.
 - [ ] Compare final canonical diff against every open PR and classify each as absorbed, superseded, blocked, or still active.
-- [ ] Obtain CI evidence for the canonical integration PR.
+- [ ] Resolve or formally preserve the three historical recovery inputs without substituting unauthoritative bytes.
+- [ ] Recover the authoritative historical blob and validate the 56-object archive, XZ stream, source tree, build, tests, and installer.
 - [ ] Only then perform separate, explicit PR/branch cleanup.
 - [ ] Resume feature development from the canonical line.
 
