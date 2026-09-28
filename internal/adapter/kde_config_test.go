@@ -3,6 +3,8 @@ package adapter
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -35,7 +37,16 @@ func (f *fakeKDERunner) Run(_ context.Context, name string, args ...string) (str
 
 func newTestKDEAdapter(t *testing.T, runner KDERunner) *KDEConfigAdapter {
 	t.Helper()
-	a, err := newKDEConfigAdapter("/usr/bin/kreadconfig6", "/usr/bin/kwriteconfig6", runner)
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "color-schemes"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"BreezeDark", "BreezeLight"} {
+		if err := os.WriteFile(filepath.Join(dir, "color-schemes", name+".colors"), []byte("[General]\nName="+name+"\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a, err := newKDEConfigAdapterWithDataDirs("/usr/bin/kreadconfig6", "/usr/bin/kwriteconfig6", runner, []string{dir})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,9 +62,6 @@ func TestKDEConfigReadUsesFixedAllowlistedTarget(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !exists || got != "BreezeDark\n" {
-		// Runner contract returns command output as provided. Production runner
-		// removes the process newline; fake output deliberately proves no shell
-		// parsing or value rewriting occurs in the adapter.
 		t.Fatalf("Read() = %q, %v; want raw fake output and exists", got, exists)
 	}
 	want := kdeRunnerCall{name: "/usr/bin/kreadconfig6", args: []string{
@@ -118,6 +126,41 @@ func TestKDEConfigSetWritesFixedArguments(t *testing.T) {
 	}}
 	if !reflect.DeepEqual(r.calls[1], want) {
 		t.Fatalf("write call = %#v; want %#v", r.calls[1], want)
+	}
+}
+
+func TestKDEConfigSetRejectsUnavailableColorSchemeBeforeWrite(t *testing.T) {
+	r := &fakeKDERunner{outputs: []string{"BreezeLight"}}
+	dir := t.TempDir()
+	a, err := newKDEConfigAdapterWithDataDirs("/usr/bin/kreadconfig6", "/usr/bin/kwriteconfig6", r, []string{dir})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.Set(context.Background(), "color-scheme", "NotInstalled")
+	if err == nil || !strings.Contains(err.Error(), "not installed") {
+		t.Fatalf("Set() error = %v; want not-installed rejection", err)
+	}
+	if len(r.calls) != 1 {
+		t.Fatalf("got %d calls; want read only and no write", len(r.calls))
+	}
+}
+
+func TestKDEConfigInstalledSchemeRequiresRegularFile(t *testing.T) {
+	r := &fakeKDERunner{outputs: []string{"BreezeLight"}}
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "color-schemes", "Directory.colors"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	a, err := newKDEConfigAdapterWithDataDirs("/usr/bin/kreadconfig6", "/usr/bin/kwriteconfig6", r, []string{dir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := a.Set(context.Background(), "color-scheme", "Directory"); err == nil {
+		t.Fatal("Set() accepted a directory as an installed color scheme")
+	}
+	if len(r.calls) != 1 {
+		t.Fatalf("got %d calls; want read only", len(r.calls))
 	}
 }
 
