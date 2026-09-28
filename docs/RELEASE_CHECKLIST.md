@@ -1,17 +1,59 @@
-# Release checklist
+# Release readiness checklist
 
-A release is allowed only after all applicable gates pass.
+A branch name, green documentation check, or successfully created archive is not sufficient. A release is ready only when every applicable item below has evidence.
 
-- canonical source provenance and version are consistent;
-- source recovery/integrity checks pass where recovery material is involved;
-- tests, vet/static checks, and builds pass;
-- installer/uninstaller and desktop integration are validated;
-- icons and AppStream/metainfo are present and correct where applicable;
-- dependency and supply-chain review is complete;
-- privacy behavior and network access are documented and reviewed;
-- packaging is reproducible enough to identify exactly what source produced the artifact;
-- no workflow requires direct or force writes to `main`;
-- release/tag/package publication requires explicit human authorization;
-- public documentation, screenshots, version labels, and changelog match the actual shipped build.
+## Source and version
 
-No failed integrity gate may be bypassed by combining unrelated historical source streams without byte-level provenance.
+- [ ] Canonical source tree is reconstructed from authoritative preserved material.
+- [ ] Reconstruction provenance and SHA-256 are recorded.
+- [ ] Internal `VERSION` agrees with package metadata, application metadata and release notes.
+- [ ] Changelog contains the target version and only verified changes.
+- [ ] Packaging uses a clean working tree tied to one reviewed commit SHA.
+
+## Tests and CI
+
+- [ ] Unit tests pass from a clean checkout.
+- [ ] `go vet ./...` passes.
+- [ ] Supported race tests pass.
+- [ ] `git diff --check` passes.
+- [ ] CLI and graphical UI targets build from a clean checkout.
+- [ ] Release-critical validation does not hide failures with unconditional `|| true`.
+
+## Packaging and reproducibility
+
+- [ ] Installer and uninstaller pass syntax and functional smoke tests.
+- [ ] Package contains the expected binaries, license, documentation and required theme assets.
+- [ ] Package file list is recorded.
+- [ ] SHA-256 is generated for every distributable artifact.
+- [ ] A second clean build produces equivalent release contents; unavoidable nondeterminism is documented.
+- [ ] No release job force-pushes or writes directly to `main`.
+- [ ] Publishing and tagging remain separate reviewed, human-authorized actions.
+
+## Desktop integration
+
+- [ ] `.desktop` entry validates and launches the installed graphical binary.
+- [ ] Application name, executable, icon and categories are consistent.
+- [ ] Icon is installed at valid freedesktop sizes/paths or as a valid scalable icon.
+- [ ] AppStream/metainfo is validated if shipped.
+- [ ] Application appears correctly in a representative Linux application menu.
+- [ ] Uninstall removes only files owned by the application.
+
+## Licensing and privacy
+
+- [ ] Software license is present in the source and release archive.
+- [ ] Generated/project-owned theme asset licensing is documented.
+- [ ] Third-party assets have provenance and compatible licensing.
+- [ ] No credentials, tokens, private paths or user data are present in source, package or artifacts.
+- [ ] Network/update behavior matches the documented privacy model.
+
+## User experience
+
+- [ ] Primary path is `download → install → application menu → launch`.
+- [ ] Terminal fallback is documented.
+- [ ] Supported distributions/desktops and known limitations are stated.
+- [ ] Real screenshots come from the validated build; fabricated UI is never presented as the application.
+- [ ] Upgrade and rollback expectations are documented.
+
+## Release gate
+
+Do not create a public release or version tag until all mandatory checks have evidence attached to the release PR or linked validation records. No failed integrity gate may be bypassed by combining unrelated historical streams without byte-level provenance.
