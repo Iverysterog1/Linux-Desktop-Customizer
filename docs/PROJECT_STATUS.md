@@ -12,7 +12,7 @@ Do not publish an installer, package, tag, or release from incomplete recovered 
 
 ## Current recovery blockers
 
-Two preserved recovery routes have independent integrity blockers. The ten-part 0.11 stream decodes to a 120,000-byte XZ archive with SHA-256 `321faa7210e54178d33da1ea9f194df67e64d1ea9ff1e10a0e066010b779b1fd`, but strict XZ validation reports unexpected end of input. The 56-object beta archive cannot be reconstructed because authoritative blob `cfd027fdf53fcd403a020f7a934b74d0febdc98c` is unavailable. Neither failed input is canonical application source; no stream may be spliced or guessed.
+Two preserved recovery routes have independent integrity blockers. The ten exact historical 0.11 fragments are now retained under `source-package/`; their stream decodes to a 120,000-byte XZ archive with SHA-256 `321faa7210e54178d33da1ea9f194df67e64d1ea9ff1e10a0e066010b779b1fd`, but strict XZ validation reports unexpected end of input. The 56-object beta archive cannot be reconstructed because authoritative blob `cfd027fdf53fcd403a020f7a934b74d0febdc98c` is unavailable. Neither failed input is canonical application source; no stream may be spliced or guessed.
 
 ## Safety
 

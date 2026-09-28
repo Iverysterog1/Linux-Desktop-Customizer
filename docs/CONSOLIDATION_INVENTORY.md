@@ -18,16 +18,16 @@ Snapshot: 2026-09-28, canonical base `9cc15cd76a6ce7c50c5f3572d92c6e2dc8963328`.
 
 ## Historical product/recovery branches
 
-- `effects-composer-beta`: ancestor only; preserve as historical provenance.
-- `effects-import`: one exclusive placeholder/evidence commit; no verified product source.
-- `publish-0.11-effects-composer`: ten exclusive encoded fragments plus an inspection workflow; reconstruction is truncated and remains `BLOCKED`.
+- `effects-composer-beta`: ancestor only; its history remains provenance and adds no content beyond the canonical line.
+- `effects-import`: its only exclusive file contains the text `effects import staging`; it has no product bytes and is intentionally superseded by the explicit recovery evidence retained here.
+- `publish-0.11-effects-composer`: the ten exact encoded fragments are preserved under `source-package/` with their pinned origin recorded. The old inspection workflow is intentionally superseded by the strict read-only canonical validator. Reconstruction is truncated and remains `BLOCKED`.
 
-Preserve until source provenance/recovery decisions are complete. They are not automatically canonical merely because they contain newer-looking material.
+The three historical inputs are now formally classified or preserved without treating incomplete material as canonical application source. Their original refs remain audit evidence until cleanup is separately authorized.
 
 ## Documentation / quality branches
 
 - `docs/github-page-refresh` / PR #4: no-loss review completed. Its recovery-state README plus applicable changelog, metadata, release-checklist and media-policy detail is integrated; its older status rewrite is superseded by the more current canonical status and inventory.
-- `quality/validate-preserved-source-package` / PR #5: complete strict validation logic is integrated under the canonical hyphenated names; the workflow remains fail-closed and is expected to `FAIL` while the XZ stream is truncated.
+- `quality/validate-preserved-source-package` / PR #5: complete strict validation logic is integrated under the canonical hyphenated names and validates the evidence stored in the canonical tree itself; the workflow remains fail-closed and is expected to `FAIL` while the XZ stream is truncated.
 - `quality/validate-historical-beta-blob-archive` / PR #9: the 56-blob manifest and reconstruction/test procedure is preserved in `scripts/recovery/validate-historical-beta-blobs.sh`. It is deliberately not wired to a token-bearing workflow; the canonical status workflow remains fail-closed on missing blob `cfd027fdf53fcd403a020f7a934b74d0febdc98c`.
 
 The original branches remain audit evidence until cleanup is separately reviewed, but they no longer contain unclassified documentation or validator logic.

@@ -5,7 +5,7 @@ Snapshot: 2026-09-28. Classification is based on exact commit/file comparison, n
 ## Represented or preserved by the convergence branch
 
 - #4: no-loss review complete. Recovery-state README plus applicable changelog, metadata, release checklist and media policy detail were retained; its older status rewrite is superseded by the current canonical status and inventory.
-- #5: strict ten-part reconstruction, XZ/path/source/build validator absorbed into the canonical workflow/script names. It remains fail-closed on the known truncated stream.
+- #5: strict ten-part reconstruction, XZ/path/source/build validator absorbed into the canonical workflow/script names. The exact historical fragments are now self-contained under `source-package/`; validation remains fail-closed on the known truncated stream.
 - #9: full 56-blob manifest and reconstruction/test procedure preserved as a read-only manual recovery script; no token-bearing Actions job was introduced. The canonical status check remains fail-closed on the missing authoritative blob.
 - #19: reviewed GitHub Actions dependency-update configuration.
 - #20: three legacy main/tag writer retirements plus regression protection.
@@ -32,6 +32,12 @@ PRs #22, #26, #28, #31, #32, #34, #35 and #36 have a passing guard run at their 
 - #25 is superseded by #36; #27 by #34; #29 by #35; #30 contributes no workflow beyond #36; #33's guard is superseded by the final guard carried by #36.
 
 Superseded does not mean deletable. The original PRs and branches remain audit evidence until the convergence PR is reviewed, recovery blockers are resolved or formally accepted, and cleanup is separately authorized.
+
+## Historical recovery inputs
+
+- `effects-composer-beta` is already an ancestor of the canonical line.
+- `effects-import` contains only a staging placeholder and no product bytes; it is intentionally superseded by the explicit recovery record.
+- `publish-0.11-effects-composer` contributed its ten exact fragments. Its write-oriented inspection workflow is superseded by the read-only, fail-closed canonical validator.
 
 ## No destructive cleanup yet
 

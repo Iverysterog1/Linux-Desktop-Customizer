@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-readonly SOURCE_COMMIT="${SOURCE_COMMIT:-80270fe4e7d9f01f2e4438e9d7c2bc1658088b8e}"
+readonly SOURCE_COMMIT="${SOURCE_COMMIT:-HEAD}"
 readonly PART_COUNT=10
 if [[ -n "${WORK_DIR:-}" ]]; then
   readonly WORK_DIR

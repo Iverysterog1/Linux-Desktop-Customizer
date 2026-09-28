@@ -3,6 +3,7 @@ name: Validate preserved source package
 on:
   pull_request:
     paths:
+      - 'source-package/**'
       - 'scripts/validate-preserved-source-package.sh'
       - '.github/workflows/validate-preserved-source-package.yml'
   workflow_dispatch:
@@ -22,10 +23,5 @@ jobs:
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
           go-version: '1.23.x'
-      - name: Fetch pinned preserved-source commit
-        run: |
-          set -Eeuo pipefail
-          git fetch --no-tags --depth=1 origin 80270fe4e7d9f01f2e4438e9d7c2bc1658088b8e
-          git cat-file -e 80270fe4e7d9f01f2e4438e9d7c2bc1658088b8e^{commit}
       - name: Strictly validate archive and recovered source
         run: bash scripts/validate-preserved-source-package.sh
