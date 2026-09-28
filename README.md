@@ -2,87 +2,76 @@
 
 > **Created by one. Improved by many. Available to all.**
 
-![Status](https://img.shields.io/badge/status-source%20recovery-orange)
-![Public baseline](https://img.shields.io/badge/public%20baseline-0.9.0-blue)
-![Development line](https://img.shields.io/badge/development-0.11%20Effects%20Composer-purple)
+![Status](https://img.shields.io/badge/status-canonical%20consolidated-brightgreen)
+![Next](https://img.shields.io/badge/P0-application%20rebuild-orange)
+![Safety](https://img.shields.io/badge/repository-read--only%20CI-blue)
 
 **Linux Desktop Customizer** is a privacy-first open-source project for personalizing the Linux desktop from one place: themes, wallpapers, icons, cursors, windows, panels, effects, sounds and other desktop appearance settings.
 
-The product direction is deliberately simple: **preview → review → apply → undo**.
+The product direction remains simple: **preview → review → apply → undo**.
 
 > [!IMPORTANT]
-> The current `main` branch is a **source-recovery workspace**, not a complete release tree.
-> Do not treat the files currently visible on `main` as an installable build.
+> Repository consolidation is complete on `integration/canonical`, but the complete original application source did not survive in the GitHub data that remains. The project is therefore rebuilding a clean, testable application foundation rather than pretending partial archives are valid source.
 
-## Version status
+## Repository state
 
-| Line | Status | Meaning |
-|---|---|---|
-| **0.9.0** | Public baseline | Initial public release line preserved in Git history. |
-| **0.11 Effects Composer** | Development / recovery | Newer preserved development line. Its source package is being reconstructed and validated before publication. |
-| **main** | Recovery workspace | Contains recovery/security scaffolding while the normal source tree is restored. |
+- **`integration/canonical`** — sole active source-of-truth and rebuild line.
+- **`main`** — preserved stable historical branch; no direct development or force-push.
+- Legacy publisher workflows and trigger scaffolding have been removed from the current canonical tree.
+- Historical recovery fragments are preserved only as explicit evidence under `recovery-evidence/`, `source-package/`, and Git history.
 
-The project previously displayed `0.9.0-visual-composer` as if it were the current installable version. That was misleading while `main` did not contain the complete source tree. The repository now separates **released/public baseline** from **newer development work**.
+See [Project status](docs/PROJECT_STATUS.md) and [Consolidation status](docs/CONSOLIDATION_STATUS.md).
 
-See [Project status](docs/PROJECT_STATUS.md) for the current recovery and release gates.
+## What happened to the original source?
 
-## What the project is designed to include
+Every surviving GitHub-only recovery route was checked:
 
-- One local interface for Linux desktop personalization.
-- Original signature themes.
-- **Creator Forge** for building complete themes from a visual direction.
-- **Visual Composer** for shaping windows, panels, docks, widgets, typography and wallpapers.
-- **Effects Composer** for advanced visual-effect configuration.
-- **Harmony Guard** for coherent palettes and visual choices.
-- **Adapter Forge** for mapping compositions to supported desktop/compositor backends.
-- Reviewed changes before apply.
-- Transaction history with rollback/undo.
-- Local-first operation with no telemetry requirement.
-- Defensive handling of downloaded theme content.
+- the historical 56-object archive is missing one authoritative Git blob;
+- the preserved ten-part XZ stream is truncated;
+- the older three-part `source.part.*` archive fails its pinned SHA-256;
+- accessible Git history contains no later `source.part.03+` and only one readable import patch part.
 
-These capabilities describe the preserved product direction. They will be marked individually as validated once the canonical source tree is restored and tested.
+There is no separate PC or external authoritative copy. The failures are documented in [Recovery evidence](docs/RECOVERY_EVIDENCE.md).
 
-## Screenshots and images
+## Current P0
 
-Real application screenshots and theme previews are being restored from the preserved source package.
+The current P0 is [Issue #40: rebuild complete application source on canonical foundation](../../issues/40).
 
-**We do not publish fabricated UI screenshots or broken placeholders.** Images will return to this README only after they are recovered from the verified source tree or captured from a reproducible build.
+The first rebuild milestone is deliberately small and verifiable:
 
-The image restoration rules are documented in [docs/media/README.md](docs/media/README.md).
+1. restore a coherent Go module;
+2. restore CLI and UI entry points;
+3. establish capability/adapters boundaries;
+4. implement safe snapshot, transaction journal and rollback primitives;
+5. restore installer/uninstaller paths;
+6. run unit/integration tests, `go vet`, race detector and Linux builds;
+7. only then resume broader desktop customization features.
+
+Issue #6 remains the product/UX contract for the first KDE full-desktop-transformation vertical slice after the foundation is buildable.
+
+## Product direction
+
+The preserved product direction includes:
+
+- one local interface for Linux desktop personalization;
+- original signature themes;
+- Creator Forge for complete theme creation;
+- Visual Composer for windows, panels, docks, widgets, typography and wallpapers;
+- Effects Composer for advanced visual effects;
+- Harmony Guard for coherent palette/visual choices;
+- Adapter Forge for supported desktop/compositor backends;
+- reviewed changes before apply;
+- transaction history with rollback/undo;
+- local-first operation with no telemetry requirement;
+- defensive handling of downloaded content.
+
+These are requirements, not claims that the current repository already ships a working build.
 
 ## Installation
 
-### Current status
+There is currently **no supported installable build** from the reconstructed canonical line.
 
-There is **no supported one-click installer from the current `main` recovery workspace yet**.
-
-The release target is:
-
-1. Download the Linux package.
-2. Open/install it normally.
-3. Find **Linux Desktop Customizer** in the application menu.
-4. Launch and use it without manual repository setup.
-
-A terminal-based fallback will also be provided for users who prefer it.
-
-Packaging work starts only after the canonical source tree passes recovery, build and installer validation. This avoids shipping an installer built from incomplete source.
-
-## Recovery and validation gates
-
-Before the next installable beta is published, the project must pass:
-
-```text
-1. Recover the complete canonical source tree
-2. Verify source-package integrity and provenance
-3. Restore normal project files and assets
-4. Run unit tests and static checks
-5. Build CLI and graphical UI targets
-6. Validate installer/uninstaller behavior
-7. Test representative Linux desktop environments
-8. Restore verified screenshots and release metadata
-9. Produce reproducible Linux packages
-10. Publish a reviewed beta
-```
+Packaging resumes only after the new source foundation passes build, test, installer/uninstaller and rollback validation. No release should be published from historical fragments or incomplete recovery archives.
 
 ## Safety and privacy
 
@@ -91,39 +80,21 @@ Linux Desktop Customizer is intended to keep personalization reversible and insp
 - No arbitrary theme install scripts should execute automatically.
 - Downloaded content should be inspected before use.
 - Unsafe archive paths and path traversal must be rejected.
-- Changes should be reviewed before apply and recorded for rollback.
+- Changes should be previewed/reviewed before apply and recorded for rollback.
 - Diagnostics should avoid leaking secrets.
 - Telemetry is not required for the application to function.
+- CI should use least privilege and immutable Action pins.
 
-Current repository security work is also removing legacy GitHub Actions paths that could write or force-push directly to `main`.
-
-See [Security testing policy](SECURITY_TESTING_POLICY.md).
-
-## Repository status
-
-The active priorities are:
-
-- **P0:** recover and validate the complete canonical source tree;
-- neutralize legacy workflows that can mutate `main`;
-- restore the normal source/assets layout;
-- restore CI and build verification;
-- make Linux installation extremely simple;
-- restore verified screenshots, version metadata and release documentation.
-
-For the exact state, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md).
-
-## GitHub presentation metadata
-
-The canonical project description, suggested topics and social-preview requirements are tracked in [docs/GITHUB_METADATA.md](docs/GITHUB_METADATA.md) so the repository page stays consistent with the actual product state.
+See [Security testing policy](SECURITY_TESTING_POLICY.md) and [Security baseline](docs/SECURITY_BASELINE.md).
 
 ## Contributing
 
-Until source recovery is complete, changes should use **branch → validation → pull request**. Do not force-push or write directly to `main`.
+New implementation work starts from **`integration/canonical`** and should use a short-lived topic branch with visible validation. Do not write or force-push directly to `main`.
 
-Security-sensitive issues should not be posted with secrets or credentials.
+Security-sensitive reports must not include credentials, private files or secrets.
 
 ## Credits
 
 **Created by JP99** — concept, product direction and testing.
 
-AI engineering assistance has been used during development and repository recovery.
+AI engineering assistance has been used during development, repository consolidation and reconstruction.
