@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"unicode/utf8"
 
@@ -49,6 +51,7 @@ type KDEConfigAdapter struct {
 	readCommand  string
 	writeCommand string
 	runner       KDERunner
+	dataDirs     []string
 }
 
 func NewKDEConfigAdapter() (*KDEConfigAdapter, error) {
@@ -60,17 +63,38 @@ func NewKDEConfigAdapter() (*KDEConfigAdapter, error) {
 	if err != nil {
 		return nil, fmt.Errorf("kde config adapter: kwriteconfig6 unavailable: %w", err)
 	}
-	return newKDEConfigAdapter(readPath, writePath, execKDERunner{})
+	return newKDEConfigAdapterWithDataDirs(readPath, writePath, execKDERunner{}, kdeDataDirs())
 }
 
 func newKDEConfigAdapter(readCommand, writeCommand string, runner KDERunner) (*KDEConfigAdapter, error) {
+	return newKDEConfigAdapterWithDataDirs(readCommand, writeCommand, runner, kdeDataDirs())
+}
+
+func newKDEConfigAdapterWithDataDirs(readCommand, writeCommand string, runner KDERunner, dataDirs []string) (*KDEConfigAdapter, error) {
 	if readCommand == "" || writeCommand == "" {
 		return nil, errors.New("kde config adapter: read and write commands are required")
 	}
 	if runner == nil {
 		return nil, errors.New("kde config adapter: runner is required")
 	}
-	return &KDEConfigAdapter{readCommand: readCommand, writeCommand: writeCommand, runner: runner}, nil
+	return &KDEConfigAdapter{readCommand: readCommand, writeCommand: writeCommand, runner: runner, dataDirs: append([]string(nil), dataDirs...)}, nil
+}
+
+func kdeDataDirs() []string {
+	var dirs []string
+	if home, err := os.UserHomeDir(); err == nil && home != "" {
+		dirs = append(dirs, filepath.Join(home, ".local", "share"))
+	}
+	if configured := os.Getenv("XDG_DATA_DIRS"); configured != "" {
+		for _, dir := range filepath.SplitList(configured) {
+			if dir != "" {
+				dirs = append(dirs, dir)
+			}
+		}
+	} else {
+		dirs = append(dirs, "/usr/local/share", "/usr/share")
+	}
+	return dirs
 }
 
 func (a *KDEConfigAdapter) Name() string { return "kde-config" }
@@ -120,6 +144,9 @@ func (a *KDEConfigAdapter) Set(ctx context.Context, key, value string) error {
 	if exists && current == value {
 		return nil
 	}
+	if key == "color-scheme" && !a.colorSchemeInstalled(value) {
+		return fmt.Errorf("kde config adapter: set %q: color scheme %q is not installed", key, value)
+	}
 	if _, err := a.runner.Run(ctx, a.writeCommand,
 		"--file", target.file,
 		"--group", target.group,
@@ -129,6 +156,20 @@ func (a *KDEConfigAdapter) Set(ctx context.Context, key, value string) error {
 		return fmt.Errorf("kde config adapter: set %q: %w", key, err)
 	}
 	return nil
+}
+
+func (a *KDEConfigAdapter) colorSchemeInstalled(name string) bool {
+	for _, dataDir := range a.dataDirs {
+		if dataDir == "" {
+			continue
+		}
+		path := filepath.Join(dataDir, "color-schemes", name+".colors")
+		info, err := os.Stat(path)
+		if err == nil && info.Mode().IsRegular() {
+			return true
+		}
+	}
+	return false
 }
 
 func (a *KDEConfigAdapter) Unset(ctx context.Context, key string) error {
