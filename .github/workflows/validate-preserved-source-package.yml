@@ -17,8 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          fetch-depth: 0
           persist-credentials: false
-      - name: Preserve recovery evidence without promotion
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+        with:
+          go-version: '1.23.x'
+      - name: Fetch pinned preserved-source commit
         run: |
-          echo 'The preserved 0.11 recovery stream is currently known to fail strict archive integrity validation.'
-          echo 'Canonical promotion is blocked until authoritative complete bytes are recovered and verified.'
+          set -Eeuo pipefail
+          git fetch --no-tags --depth=1 origin 80270fe4e7d9f01f2e4438e9d7c2bc1658088b8e
+          git cat-file -e 80270fe4e7d9f01f2e4438e9d7c2bc1658088b8e^{commit}
+      - name: Strictly validate archive and recovered source
+        run: bash scripts/validate-preserved-source-package.sh

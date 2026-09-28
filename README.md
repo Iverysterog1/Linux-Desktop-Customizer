@@ -2,162 +2,128 @@
 
 > **Created by one. Improved by many. Available to all.**
 
-[![CI](https://github.com/Iverysterog1/Linux-Desktop-Customizer/actions/workflows/ci.yml/badge.svg)](https://github.com/Iverysterog1/Linux-Desktop-Customizer/actions/workflows/ci.yml)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.9.0--visual--composer-informational)](VERSION)
+![Status](https://img.shields.io/badge/status-source%20recovery-orange)
+![Public baseline](https://img.shields.io/badge/public%20baseline-0.9.0-blue)
+![Development line](https://img.shields.io/badge/development-0.11%20Effects%20Composer-purple)
 
-**Linux Desktop Customizer** is a privacy-first open-source application for changing the whole Linux desktop from one place: themes, wallpapers, icons, cursors, windows, panels, effects, sounds, login/boot artwork and more.
+**Linux Desktop Customizer** is a privacy-first open-source project for personalizing the Linux desktop from one place: themes, wallpapers, icons, cursors, windows, panels, effects, sounds and other desktop appearance settings.
 
-The project focuses on a simple workflow: **preview → review → use → undo**. Changes are validated, journalled and reversible, downloads are quarantined, and arbitrary theme scripts are never executed automatically.
+The product direction is deliberately simple: **preview → review → apply → undo**.
 
-## Signature themes
+> [!IMPORTANT]
+> The current `main` branch is a **source-recovery workspace**, not a complete release tree.
+> Do not treat the files currently visible on `main` as an installable build.
 
-Linux Desktop Customizer includes six original JP99 signature themes: **Fire, Water, Wind, Earth, Mac Inspired and Windows Inspired**.
+## Version status
 
-> Theme preview images are being added together with the complete source tree. They are temporarily hidden here so the public README does not display broken image placeholders while the repository import is being completed.
+| Line | Status | Meaning |
+|---|---|---|
+| **0.9.0** | Public baseline | Initial public release line preserved in Git history. |
+| **0.11 Effects Composer** | Development / recovery | Newer preserved development line. Its source package is being reconstructed and validated before publication. |
+| **main** | Recovery workspace | Contains recovery/security scaffolding while the normal source tree is restored. |
 
-The “Mac Inspired” and “Windows Inspired” themes are original, unaffiliated designs inspired by broad desktop design language; they do not include vendor-owned assets.
+The project previously displayed `0.9.0-visual-composer` as if it were the current installable version. That was misleading while `main` did not contain the complete source tree. The repository now separates **released/public baseline** from **newer development work**.
 
-## What it includes
+See [Project status](docs/PROJECT_STATUS.md) for the current recovery and release gates.
 
-- One local UI for desktop personalization.
-- Six JP99 signature themes: **Fire, Water, Wind, Earth, Mac Inspired and Windows Inspired**.
-- **Creator Forge** for building complete themes from a visual direction instead of hand-editing configuration files.
-- **Visual Composer** for shaping windows, panels, docks, widgets, typography, wallpaper and effect intent from a visual preview.
-- **Harmony Guard** to keep palettes and visual choices coherent.
-- **Adapter Forge** to preview how a composition maps to supported compositor/desktop backends.
-- Safe theme acquisition, inspection, quarantine and provenance handling.
-- Reviewed plans before apply.
-- Transaction journal and rollback/undo support.
-- Diagnostics designed to avoid leaking secrets.
-- Local-first operation with no telemetry, analytics, device ID or automatic crash reporting.
+## What the project is designed to include
 
-## Safety model
+- One local interface for Linux desktop personalization.
+- Original signature themes.
+- **Creator Forge** for building complete themes from a visual direction.
+- **Visual Composer** for shaping windows, panels, docks, widgets, typography and wallpapers.
+- **Effects Composer** for advanced visual-effect configuration.
+- **Harmony Guard** for coherent palettes and visual choices.
+- **Adapter Forge** for mapping compositions to supported desktop/compositor backends.
+- Reviewed changes before apply.
+- Transaction history with rollback/undo.
+- Local-first operation with no telemetry requirement.
+- Defensive handling of downloaded theme content.
 
-Linux Desktop Customizer deliberately separates **passive theme assets** from active code.
+These capabilities describe the preserved product direction. They will be marked individually as validated once the canonical source tree is restored and tested.
 
-- Theme packages do not get to run arbitrary install scripts automatically.
-- Downloaded content is inspected before use.
-- Unsafe archive entries and path escapes are rejected.
-- Changes are reviewed before apply and recorded for rollback.
-- Official theme payloads are generated from repository-owned source definitions.
-- The application does not require telemetry to function.
+## Screenshots and images
 
-See [SECURITY.md](SECURITY.md), [docs/PRIVACY.md](docs/PRIVACY.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/VALIDATION.md](docs/VALIDATION.md) for the detailed model and current validation status.
+Real application screenshots and theme previews are being restored from the preserved source package.
 
-## Current validation status
+**We do not publish fabricated UI screenshots or broken placeholders.** Images will return to this README only after they are recovered from the verified source tree or captured from a reproducible build.
 
-Version `0.9.0-visual-composer` has automated Go tests covering the application core, update path, transactions, manifests, planning, UI, remote content handling, diagnostics and signature themes.
+The image restoration rules are documented in [docs/media/README.md](docs/media/README.md).
 
-The public repository CI rebuilds the six official themes before executing:
+## Installation
 
-```text
-go test ./...
-go vet ./...
-go test -race ./...
-git diff --check
-go build ./cmd/ltc
-go build ./cmd/ltc-ui
-```
+### Current status
 
-Real graphical validation across the full Linux desktop matrix is still an explicit work item. A green CI build must not be interpreted as proof that every compositor/desktop combination has been tested on real hardware.
+There is **no supported one-click installer from the current `main` recovery workspace yet**.
 
-See [docs/VALIDATION.md](docs/VALIDATION.md) for the exact evidence and remaining gaps.
+The release target is:
 
-## Build from source
+1. Download the Linux package.
+2. Open/install it normally.
+3. Find **Linux Desktop Customizer** in the application menu.
+4. Launch and use it without manual repository setup.
 
-### Requirements
+A terminal-based fallback will also be provided for users who prefer it.
 
-- Go 1.23+
-- Python 3.10+
-- Python packages listed in `requirements-assets.txt`
+Packaging work starts only after the canonical source tree passes recovery, build and installer validation. This avoids shipping an installer built from incomplete source.
 
-### Prepare generated theme assets
+## Recovery and validation gates
 
-```bash
-python3 -m pip install -r requirements-assets.txt
-python3 scripts/generate_signature_themes.py
-```
-
-Or:
-
-```bash
-make assets
-```
-
-### Test
-
-```bash
-make test
-make vet
-```
-
-### Build
-
-```bash
-make build
-```
-
-The binaries are written to:
+Before the next installable beta is published, the project must pass:
 
 ```text
-bin/ltc
-bin/ltc-ui
+1. Recover the complete canonical source tree
+2. Verify source-package integrity and provenance
+3. Restore normal project files and assets
+4. Run unit tests and static checks
+5. Build CLI and graphical UI targets
+6. Validate installer/uninstaller behavior
+7. Test representative Linux desktop environments
+8. Restore verified screenshots and release metadata
+9. Produce reproducible Linux packages
+10. Publish a reviewed beta
 ```
 
-## Theme payloads
+## Safety and privacy
 
-The complete official theme tree is reproducible from `scripts/generate_signature_themes.py` and repository-owned design definitions.
+Linux Desktop Customizer is intended to keep personalization reversible and inspectable.
 
-A clean regeneration was checked against the supplied `0.9.0-visual-composer` source package: all **379 generated files** were recreated with the same paths and SHA-256 hashes.
+- No arbitrary theme install scripts should execute automatically.
+- Downloaded content should be inspected before use.
+- Unsafe archive paths and path traversal must be rejected.
+- Changes should be reviewed before apply and recorded for rollback.
+- Diagnostics should avoid leaking secrets.
+- Telemetry is not required for the application to function.
 
-GitHub Actions regenerates the payload before tests and before packaging Linux releases.
+Current repository security work is also removing legacy GitHub Actions paths that could write or force-push directly to `main`.
 
-## Linux releases
+See [Security testing policy](SECURITY_TESTING_POLICY.md).
 
-The `Linux builds` GitHub Actions workflow builds Linux `amd64` and `arm64` archives. Tags matching `v*` trigger testing, cross-compilation, SHA-256 generation and publication of GitHub Release assets.
+## Repository status
 
-A release archive contains:
+The active priorities are:
 
-- `ltc`
-- `ltc-ui`
-- per-user installer/uninstaller
-- README and GPL license
-- all six regenerated official theme payloads
+- **P0:** recover and validate the complete canonical source tree;
+- neutralize legacy workflows that can mutate `main`;
+- restore the normal source/assets layout;
+- restore CI and build verification;
+- make Linux installation extremely simple;
+- restore verified screenshots, version metadata and release documentation.
 
-## Documentation
+For the exact state, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md).
 
-Useful project documents:
+## GitHub presentation metadata
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Visual Composer](docs/VISUAL_COMPOSER.md)
-- [Creator Forge](docs/CREATOR_FORGE.md)
-- [Adapter Forge](docs/ADAPTER_FORGE.md)
-- [Theme format](docs/THEME_FORMAT.md)
-- [Personalization model](docs/PERSONALIZATION.md)
-- [Updates](docs/UPDATES.md)
-- [Validation](docs/VALIDATION.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Community](docs/COMMUNITY.md)
-- [Publishing](docs/PUBLISHING.md)
+The canonical project description, suggested topics and social-preview requirements are tracked in [docs/GITHUB_METADATA.md](docs/GITHUB_METADATA.md) so the repository page stays consistent with the actual product state.
 
 ## Contributing
 
-Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes, and use the repository issue tracker for reproducible bugs or design discussions.
+Until source recovery is complete, changes should use **branch → validation → pull request**. Do not force-push or write directly to `main`.
 
-Security-sensitive reports should follow [SECURITY.md](SECURITY.md) instead of being posted publicly.
-
-## Licensing
-
-- **Software code:** GNU General Public License v3.0 — see [LICENSE](LICENSE).
-- **Official JP99 theme assets:** CC BY-SA 4.0 as declared by their generated manifests.
-
-Third-party/community themes retain their own upstream licensing and provenance and are not silently relicensed by this project.
+Security-sensitive issues should not be posted with secrets or credentials.
 
 ## Credits
 
 **Created by JP99** — concept, product direction and testing.
 
-**GPT-5.6 Sol by OpenAI** — AI engineering collaboration.
-
-See [CREDITS.md](CREDITS.md) for additional project credits and attribution details.
+AI engineering assistance has been used during development and repository recovery.
