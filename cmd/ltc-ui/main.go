@@ -1,32 +1,51 @@
 package main
 
 import (
-	"context"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/app"
+	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/ui"
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/version"
 )
 
 func main() {
+	jsonOutput := flag.Bool("json", false, "print the UI foundation model as JSON")
+	flag.Parse()
+
 	rt, err := app.New()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ltc-ui:", err)
 		os.Exit(1)
 	}
+	model := ui.FoundationModel(version.Value, rt.Registry)
 
-	fmt.Printf("Linux Desktop Customizer %s\n", version.Value)
-	fmt.Println("UI foundation: graphical shell not implemented yet.")
-	fmt.Println("The safety/transaction engine is available through the ltc CLI.")
-	for _, a := range rt.Registry.All() {
-		fmt.Printf("adapter %s:\n", a.Name())
-		for _, cap := range a.Capabilities(context.Background()) {
-			fmt.Printf("  - %s: supported=%t", cap.ID, cap.Supported)
-			if cap.Reason != "" {
-				fmt.Printf(" (%s)", cap.Reason)
-			}
-			fmt.Println()
+	if *jsonOutput {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		if err := enc.Encode(model); err != nil {
+			fmt.Fprintln(os.Stderr, "ltc-ui:", err)
+			os.Exit(1)
 		}
+		return
+	}
+
+	fmt.Printf("%s %s\n", model.Product, model.Version)
+	fmt.Println("UI foundation status:")
+	for _, screen := range model.Screens {
+		state := "available"
+		if !screen.Enabled {
+			state = "gated"
+		}
+		fmt.Printf("  - %s: %s — %s", screen.Title, state, screen.Description)
+		if screen.Reason != "" {
+			fmt.Printf(" (%s)", screen.Reason)
+		}
+		fmt.Println()
+	}
+	for _, warning := range model.Warnings {
+		fmt.Printf("warning: %s\n", warning)
 	}
 }
