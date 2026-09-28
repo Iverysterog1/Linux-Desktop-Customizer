@@ -1,8 +1,8 @@
 name: Finalize reviewed repository (retired)
 
 # SECURITY: This legacy publication workflow previously downloaded an external
-# archive and force-pushed a replacement tree directly to main. Keep the file
-# only as an inert audit marker; publication must go through reviewed changes.
+# archive and replaced the default branch directly. Keep the file only as an
+# inert audit marker; publication must go through reviewed changes.
 on:
   workflow_dispatch:
 
@@ -16,4 +16,4 @@ jobs:
       - name: Legacy publisher is disabled
         run: |
           echo 'Legacy tunnel publisher is retired.'
-          echo 'No source download, dependency execution, commit, or push is performed.'
+          echo 'No source download, dependency execution, commit, or publication is performed.'
