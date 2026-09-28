@@ -67,11 +67,13 @@ The preserved product direction includes:
 
 These are requirements, not claims that the current repository already ships a working build.
 
-## Installation
+## Installation and graphical preview
 
-There is currently **no supported installable build** from the reconstructed canonical line.
+There is currently **no supported release build** from the reconstructed canonical line. A read-only graphical development runtime now exists for validation, but it does not yet make desktop changes.
 
-Packaging resumes only after the new source foundation passes build, test, installer/uninstaller and rollback validation. No release should be published from historical fragments or incomplete recovery archives.
+For bilingual English/Portuguese build and safe loopback launch instructions, see [Graphical UI onboarding](docs/GETTING_STARTED_UI.md). Real project screenshots must follow the [real Linux screenshot evidence procedure](docs/REAL_LINUX_SCREENSHOTS.md); mockups or generated substitutes do not satisfy the release gate.
+
+Packaging/release remains gated until the source foundation passes build, test, installer/uninstaller, rollback, real Linux/KDE and security validation. No release should be published from historical fragments or incomplete recovery archives.
 
 ## Safety and privacy
 
