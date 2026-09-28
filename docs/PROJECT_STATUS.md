@@ -1,19 +1,26 @@
-# Linux Desktop Customizer — project status
+# Project status
 
-## Canonical state
+Date: 2026-09-28
 
-The repository is undergoing source recovery and consolidation. The verified public baseline is 0.9.0. Preserved 0.11 Effects Composer material is development/recovery evidence and must not be represented as a verified final release until reconstruction and integrity validation pass.
+## Repository
 
-`main` remains the stable default branch. During consolidation, `integration/canonical` is the single integration line. The branch/PR inventory and no-loss classification are complete in PR #37, but feature development remains paused until that convergence is reviewed and authoritative application source is recovered.
+The repository has one intended working truth: `integration/canonical`. `main` remains stable and is not used for direct development during reconstruction.
 
-## Release discipline
+Repository security and consolidation work is substantially complete: legacy direct/force publishers are removed from the current tree, active validation workflows are read-only, and the workflow regression guard remains in place.
 
-Do not publish an installer, package, tag, or release from incomplete recovered material. A release candidate must have a complete source tree, reproducible provenance, passing tests/builds, packaging validation, privacy/security review, and explicit human publication approval.
+## Application
 
-## Current recovery blockers
+The complete original application source is not present in the surviving GitHub bytes. Multiple preserved recovery routes are incomplete and have been validated as such; no external PC/source copy exists.
 
-Two preserved recovery routes have independent integrity blockers. The ten exact historical 0.11 fragments are now retained under `source-package/`; their stream decodes to a 120,000-byte XZ archive with SHA-256 `321faa7210e54178d33da1ea9f194df67e64d1ea9ff1e10a0e066010b779b1fd`, but strict XZ validation reports unexpected end of input. The 56-object beta archive cannot be reconstructed because authoritative blob `cfd027fdf53fcd403a020f7a934b74d0febdc98c` is unavailable. Neither failed input is canonical application source; no stream may be spliced or guessed.
+The project therefore moves from **source recovery** to **clean source rebuild**. Historical fragments, patch material, product documentation and requirements are evidence/reference inputs, not a buildable source tree.
 
-## Safety
+## Release state
 
-Direct or force writes to `main` are prohibited by project governance. PR #37 proposes the consolidated read-only retirement of the remaining legacy writers. Until it is reviewed and integrated, the old canonical base must still be treated as write-capable.
+No release is authorized. Before any release or promotion to `main`, the rebuilt application must pass:
+
+- unit/integration tests;
+- `go vet` and race detector;
+- CLI/UI builds;
+- installer and uninstaller syntax/behavior checks;
+- clean-install and rollback validation;
+- functional desktop-adapter tests with failures visible.

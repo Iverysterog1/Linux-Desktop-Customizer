@@ -1,14 +1,10 @@
-# Repository consolidation
+# Consolidation documentation
 
-For current development/recovery state, read in this order:
+The active consolidation record is intentionally small:
 
-1. `PROJECT_STATUS.md`
-2. `BRANCH_GOVERNANCE.md`
-3. `CONSOLIDATION_STATUS.md`
-4. `CONSOLIDATION_INVENTORY.md`
-5. `PR_CONSOLIDATION_MAP.md`
-6. `CONSOLIDATION_CHECKLIST.md`
-7. `CANONICAL_SOURCE_POLICY.md`
-8. `NEXT_AFTER_CONSOLIDATION.md`
+- [CONSOLIDATION_STATUS.md](CONSOLIDATION_STATUS.md) — current truth and recovery decision.
+- [CONSOLIDATION_CHECKLIST.md](CONSOLIDATION_CHECKLIST.md) — completed and remaining gates.
+- [CONSOLIDATION_INVENTORY.md](CONSOLIDATION_INVENTORY.md) — what is preserved and why.
+- [PR_CONSOLIDATION_MAP.md](PR_CONSOLIDATION_MAP.md) — PR classification.
 
-These files describe the temporary consolidation process. They do not authorize a release or a merge to `main`.
+Historical details remain available in Git history and closed PR discussions; they are not duplicated across dozens of tiny status files.

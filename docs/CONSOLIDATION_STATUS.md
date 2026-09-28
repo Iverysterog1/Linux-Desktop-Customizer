@@ -1,28 +1,32 @@
 # Consolidation status
 
-Date: 2026-09-27
+Date: 2026-09-28
 
-Canonical integration branch: `integration/canonical`
-Base: `main` at `56fa162d076cbe96c3ebdca828f480070293708a`
+## State
 
-## Integrated centrally
+**Canonical content consolidation: COMPLETE.**
+**Legacy pull-request/branch cleanup: in progress.**
 
-- PR #20 family: retirement of `finalize-reviewed-source.yml`, `sync-final-source.yml`, and `tag-v0.9.0.yml`, with a regression guard.
-- PR #19: reviewed GitHub Actions dependency-update configuration.
-- PR #21: least-privilege pull-request guard against workflow write/direct-push regressions.
-- Branch governance defining `main` as stable and `integration/canonical` as the single consolidation line.
+The only authoritative storage for this project is GitHub. There is no separate PC or external source tree to recover from.
 
-## Preserved as recovery evidence, not canonical application source
+- Stable branch: `main` at `56fa162d076cbe96c3ebdca828f480070293708a` (untouched by consolidation).
+- Sole integration/source-of-truth line: `integration/canonical`.
+- PR #37 centralized every pre-existing classified workflow remediation, validator, documentation contribution, and preserved recovery fragment.
+- The immutable Action pinning from PR #38 is incorporated into the final cleanup line.
 
-- PR #5: preserved 0.11 source package validator; current evidence says the stream is truncated.
-- PR #9: historical blob archive validator; current evidence says an authoritative blob is unavailable.
+## Recovery truth
 
-These validators and their findings must remain available, but their failed recovery inputs must not be promoted into canonical application source.
+The original complete application source cannot be reconstructed from the GitHub bytes currently available:
 
-## Legacy security PR family still to absorb/classify
+1. The 56-object historical archive is missing authoritative blob `cfd027fdf53fcd403a020f7a934b74d0febdc98c`.
+2. The ten-part preserved XZ stream is truncated and fails integrity validation.
+3. The older three-part `bootstrap/source.part.*.b64` path was re-tested on GitHub Actions run `36413607567`; the reconstructed archive does **not** match its pinned SHA-256 `444f8803b764e2e7f709185428d1b519a44cd902291c40aef891cee8992413bd`.
+4. Git history contains no `source.part.03+` and only one readable `import-parts/part-000.patch`.
 
-PRs #1, #3, #7, #8, #10-#18 address additional legacy workflows. They remain open evidence until each unique workflow remediation is represented on `integration/canonical`. Do not delete their branches before that classification is complete.
+These failures are preserved as evidence. No bytes are invented or silently substituted.
 
-## Development state
+## Decision
 
-PAUSED for feature work until consolidation completes. No merge to `main`, release, tag publication, credential rotation, or branch deletion is authorized by this document.
+Do not keep waiting for a non-existent off-GitHub copy. Historical fragments are retained as evidence, but the next product phase is a **clean rebuild of the missing application source from the surviving specifications, README/history, patches and validated project requirements**.
+
+No release or promotion to `main` is authorized until that rebuilt source has tests, race checks, builds, installer/uninstaller checks and functional validation.
