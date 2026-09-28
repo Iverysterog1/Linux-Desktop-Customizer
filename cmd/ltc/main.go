@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/app"
+	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/platform"
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/transaction"
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/version"
 )
@@ -40,11 +42,15 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 			Capabilities interface{} `json:"capabilities"`
 		}
 		status := struct {
-			Version    string          `json:"version"`
-			StateDir   string          `json:"state_dir"`
-			ManagedDir string          `json:"managed_dir"`
-			Adapters   []adapterStatus `json:"adapters"`
-		}{Version: version.Value, StateDir: rt.StateDir, ManagedDir: rt.ManagedDir}
+			Version    string             `json:"version"`
+			StateDir   string             `json:"state_dir"`
+			ManagedDir string             `json:"managed_dir"`
+			Adapters   []adapterStatus    `json:"adapters"`
+			KDE        platform.KDEStatus `json:"kde"`
+		}{
+			Version: version.Value, StateDir: rt.StateDir, ManagedDir: rt.ManagedDir,
+			KDE: platform.ProbeKDE(os.Getenv, exec.LookPath),
+		}
 		for _, a := range rt.Registry.All() {
 			status.Adapters = append(status.Adapters, adapterStatus{
 				Name: a.Name(), Capabilities: a.Capabilities(ctx),
