@@ -23,6 +23,8 @@ func localeFromEnvironment() string {
 func main() {
 	jsonOutput := flag.Bool("json", false, "print the UI foundation model as JSON")
 	locale := flag.String("locale", "", "UI locale (en or pt-PT); defaults to LC_ALL, LC_MESSAGES, then LANG")
+	web := flag.Bool("web", false, "run the local graphical UI")
+	listen := flag.String("listen", "127.0.0.1:7788", "graphical UI loopback listen address")
 	flag.Parse()
 
 	rt, err := app.New()
@@ -40,6 +42,14 @@ func main() {
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(model); err != nil {
+			fmt.Fprintln(os.Stderr, "ltc-ui:", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	if *web {
+		if err := serveGraphical(model, *listen); err != nil {
 			fmt.Fprintln(os.Stderr, "ltc-ui:", err)
 			os.Exit(1)
 		}
