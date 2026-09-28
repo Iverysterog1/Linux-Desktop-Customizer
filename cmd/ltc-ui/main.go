@@ -11,8 +11,18 @@ import (
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/version"
 )
 
+func localeFromEnvironment() string {
+	for _, key := range []string{"LC_ALL", "LC_MESSAGES", "LANG"} {
+		if value := os.Getenv(key); value != "" {
+			return value
+		}
+	}
+	return ui.LocaleEnglish
+}
+
 func main() {
 	jsonOutput := flag.Bool("json", false, "print the UI foundation model as JSON")
+	locale := flag.String("locale", "", "UI locale (en or pt-PT); defaults to LC_ALL, LC_MESSAGES, then LANG")
 	flag.Parse()
 
 	rt, err := app.New()
@@ -20,7 +30,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, "ltc-ui:", err)
 		os.Exit(1)
 	}
-	model := ui.FoundationModel(version.Value, rt.Registry)
+	selectedLocale := *locale
+	if selectedLocale == "" {
+		selectedLocale = localeFromEnvironment()
+	}
+	model := ui.FoundationModelForLocale(version.Value, rt.Registry, selectedLocale)
 
 	if *jsonOutput {
 		enc := json.NewEncoder(os.Stdout)
@@ -32,12 +46,13 @@ func main() {
 		return
 	}
 
+	labels := ui.LabelsForLocale(selectedLocale)
 	fmt.Printf("%s %s\n", model.Product, model.Version)
-	fmt.Println("UI foundation status:")
+	fmt.Println(labels.Status)
 	for _, screen := range model.Screens {
-		state := "available"
+		state := labels.Available
 		if !screen.Enabled {
-			state = "gated"
+			state = labels.Gated
 		}
 		fmt.Printf("  - %s: %s — %s", screen.Title, state, screen.Description)
 		if screen.Reason != "" {
@@ -46,6 +61,6 @@ func main() {
 		fmt.Println()
 	}
 	for _, warning := range model.Warnings {
-		fmt.Printf("warning: %s\n", warning)
+		fmt.Printf("%s: %s\n", labels.Warning, warning)
 	}
 }
