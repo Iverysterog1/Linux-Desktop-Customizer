@@ -10,9 +10,10 @@ import (
 
 func TestGraphicalHandlerPortugueseAndEscaping(t *testing.T) {
 	model := ui.Model{
-		Product: "Linux Desktop Customizer <unsafe>",
-		Version: "test",
-		Locale:  ui.LocalePortuguese,
+		Product:      "Linux Desktop Customizer <unsafe>",
+		Version:      "test",
+		Locale:       ui.LocalePortuguese,
+		BrandTagline: "Criado por um. Melhorado por muitos. Disponível para todos.",
 		Screens: []ui.Screen{{ID: "home", Title: "Início", Description: "Seguro <script>alert(1)</script>", Enabled: true}},
 		Warnings: []string{"Aviso <b>seguro</b>"},
 	}
@@ -23,7 +24,16 @@ func TestGraphicalHandlerPortugueseAndEscaping(t *testing.T) {
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
 	body := rec.Body.String()
-	for _, want := range []string{"Estado da interface:", "disponível", "Início", "&lt;unsafe&gt;", "&lt;script&gt;alert(1)&lt;/script&gt;"} {
+	for _, want := range []string{
+		"Estado da interface:",
+		"disponível",
+		"Início",
+		"Criado por um. Melhorado por muitos. Disponível para todos.",
+		`href="#home"`,
+		`href="#content"`,
+		"&lt;unsafe&gt;",
+		"&lt;script&gt;alert(1)&lt;/script&gt;",
+	} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("response missing %q: %s", want, body)
 		}
@@ -36,8 +46,14 @@ func TestGraphicalHandlerPortugueseAndEscaping(t *testing.T) {
 	}
 }
 
-func TestGraphicalHandlerEnglishFallback(t *testing.T) {
-	model := ui.Model{Product: "LTC", Version: "test", Locale: "unknown", Screens: []ui.Screen{{ID: "themes", Title: "Themes", Enabled: false, Reason: "gated"}}}
+func TestGraphicalHandlerEnglishFallbackAndGatedState(t *testing.T) {
+	model := ui.Model{
+		Product:      "LTC",
+		Version:      "test",
+		Locale:       "unknown",
+		BrandTagline: "Created by one. Improved by many. Available to all.",
+		Screens:      []ui.Screen{{ID: "themes", Title: "Themes", Enabled: false, Reason: "gated"}},
+	}
 	h, err := graphicalHandler(model)
 	if err != nil {
 		t.Fatal(err)
@@ -45,9 +61,27 @@ func TestGraphicalHandlerEnglishFallback(t *testing.T) {
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, httptest.NewRequest("GET", "/", nil))
 	body := rec.Body.String()
-	for _, want := range []string{"UI status:", "gated", "Themes"} {
+	for _, want := range []string{
+		"UI status:",
+		"gated",
+		"Themes",
+		`aria-disabled="true"`,
+		"Created by one. Improved by many. Available to all.",
+	} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("response missing %q", want)
+		}
+	}
+}
+
+func TestGraphicalPageIncludesAccessibilityCSS(t *testing.T) {
+	for _, want := range []string{
+		"prefers-reduced-motion:reduce",
+		"forced-colors:active",
+		":focus-visible",
+	} {
+		if !strings.Contains(graphicalPage, want) {
+			t.Fatalf("graphicalPage missing %q", want)
 		}
 	}
 }
