@@ -24,6 +24,9 @@ func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 	if m.Locale != LocaleEnglish {
 		t.Fatalf("default locale = %q", m.Locale)
 	}
+	if m.BrandTagline != "Created by one. Improved by many. Available to all." {
+		t.Fatalf("brand tagline = %q", m.BrandTagline)
+	}
 	for _, screen := range m.Screens {
 		if screen.ID == "desktop" && screen.Enabled {
 			t.Fatal("desktop screen must remain gated until a native adapter is integrated")
@@ -32,7 +35,10 @@ func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 	if len(m.Warnings) == 0 {
 		t.Fatal("foundation model should explain current adapter limits")
 	}
-	if !m.Accessibility.ReducedMotionSupported || !m.Accessibility.ReadableTextSupported {
+	if !m.Accessibility.ReducedMotionSupported ||
+		!m.Accessibility.ReadableTextSupported ||
+		!m.Accessibility.HighContrastSupported ||
+		!m.Accessibility.KeyboardNavigationSupported {
 		t.Fatal("foundation model must expose accessibility capabilities")
 	}
 }
@@ -42,6 +48,9 @@ func TestFoundationModelPortuguese(t *testing.T) {
 	m := FoundationModelForLocale("test", nil, "pt_PT.UTF-8")
 	if m.Locale != LocalePortuguese {
 		t.Fatalf("locale = %q", m.Locale)
+	}
+	if m.BrandTagline != "Criado por um. Melhorado por muitos. Disponível para todos." {
+		t.Fatalf("Portuguese tagline = %q", m.BrandTagline)
 	}
 	if m.Screens[0].Title != "Início" {
 		t.Fatalf("home title = %q", m.Screens[0].Title)
@@ -56,6 +65,9 @@ func TestFoundationModelUnknownLocaleFallsBackToEnglish(t *testing.T) {
 	m := FoundationModelForLocale("test", nil, "fr-FR")
 	if m.Locale != LocaleEnglish {
 		t.Fatalf("locale = %q, want %q", m.Locale, LocaleEnglish)
+	}
+	if m.BrandTagline != "Created by one. Improved by many. Available to all." {
+		t.Fatalf("fallback tagline = %q", m.BrandTagline)
 	}
 	if m.Screens[0].Title != "Home" {
 		t.Fatalf("fallback title = %q", m.Screens[0].Title)
