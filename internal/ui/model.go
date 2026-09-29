@@ -15,8 +15,10 @@ type Screen struct {
 }
 
 type Accessibility struct {
-	ReducedMotionSupported bool `json:"reduced_motion_supported"`
-	ReadableTextSupported  bool `json:"readable_text_supported"`
+	ReducedMotionSupported       bool `json:"reduced_motion_supported"`
+	ReadableTextSupported        bool `json:"readable_text_supported"`
+	HighContrastSupported        bool `json:"high_contrast_supported"`
+	KeyboardNavigationSupported  bool `json:"keyboard_navigation_supported"`
 }
 
 type Model struct {
@@ -24,6 +26,7 @@ type Model struct {
 	Version       string        `json:"version"`
 	Mode          string        `json:"mode"`
 	Locale        string        `json:"locale"`
+	BrandTagline  string        `json:"brand_tagline"`
 	Screens       []Screen      `json:"screens"`
 	Accessibility Accessibility `json:"accessibility"`
 	Warnings      []string      `json:"warnings,omitempty"`
@@ -37,10 +40,11 @@ func FoundationModel(version string, registry *adapter.Registry) Model {
 func FoundationModelForLocale(version string, registry *adapter.Registry, locale string) Model {
 	locale = NormalizeLocale(locale)
 	m := Model{
-		Product: "Linux Desktop Customizer",
-		Version: version,
-		Mode:    "rebuild-foundation",
-		Locale:  locale,
+		Product:      "Linux Desktop Customizer",
+		Version:      version,
+		Mode:         "rebuild-foundation",
+		Locale:       locale,
+		BrandTagline: message(locale, "splash.tagline"),
 		Screens: []Screen{
 			{ID: "home", Title: message(locale, "screen.home.title"), Description: message(locale, "screen.home.description"), Enabled: true},
 			{ID: "preview", Title: message(locale, "screen.preview.title"), Description: message(locale, "screen.preview.description"), Enabled: true},
@@ -49,8 +53,10 @@ func FoundationModelForLocale(version string, registry *adapter.Registry, locale
 			{ID: "themes", Title: message(locale, "screen.themes.title"), Description: message(locale, "screen.themes.description"), Enabled: false, Reason: message(locale, "screen.themes.reason")},
 		},
 		Accessibility: Accessibility{
-			ReducedMotionSupported: true,
-			ReadableTextSupported:  true,
+			ReducedMotionSupported:      true,
+			ReadableTextSupported:       true,
+			HighContrastSupported:       true,
+			KeyboardNavigationSupported: true,
 		},
 	}
 	if registry == nil || len(registry.All()) == 0 {
