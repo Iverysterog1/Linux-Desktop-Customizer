@@ -29,8 +29,8 @@ func TestGraphicalHandlerPortugueseAndEscaping(t *testing.T) {
 		"disponível",
 		"Início",
 		"Criado por um. Melhorado por muitos. Disponível para todos.",
-		"href="#home"",
-		"href="#content"",
+		`href="#home"`,
+		`href="#content"`,
 		"&lt;unsafe&gt;",
 		"&lt;script&gt;alert(1)&lt;/script&gt;",
 	} {
@@ -65,7 +65,7 @@ func TestGraphicalHandlerEnglishFallbackAndGatedState(t *testing.T) {
 		"UI status:",
 		"gated",
 		"Themes",
-		"aria-disabled="true"",
+		`aria-disabled="true"`,
 		"Created by one. Improved by many. Available to all.",
 	} {
 		if !strings.Contains(body, want) {
