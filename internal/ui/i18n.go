@@ -25,6 +25,9 @@ var catalog = map[string]messages{
 		"screen.themes.reason": "theme pipeline is not integrated yet",
 		"warning.no_adapters": "No mutation adapters are available.",
 		"warning.safe_adapters": "%d safe adapter(s) currently available; desktop-specific mutation remains gated.",
+		"splash.tagline": "Created by one. Improved by many. Available to all.",
+		"a11y.high_contrast": "High contrast",
+		"a11y.keyboard": "Keyboard navigation",
 	},
 	LocalePortuguese: {
 		"screen.home.title": "Início",
@@ -41,6 +44,9 @@ var catalog = map[string]messages{
 		"screen.themes.reason": "O sistema de temas ainda não está integrado",
 		"warning.no_adapters": "Não existem adaptadores de alteração disponíveis.",
 		"warning.safe_adapters": "%d adaptador(es) seguro(s) disponível(eis); as alterações específicas do ambiente de trabalho continuam bloqueadas.",
+		"splash.tagline": "Criado por um. Melhorado por muitos. Disponível para todos.",
+		"a11y.high_contrast": "Alto contraste",
+		"a11y.keyboard": "Navegação por teclado",
 	},
 }
 
