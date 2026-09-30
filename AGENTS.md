@@ -9,17 +9,19 @@ This file applies to every automated agent and contributor working in this repos
 - Every implementation starts from the latest verified canonical SHA and returns through a reviewed pull request.
 - Closed PRs and Git history preserve audit evidence; old topic branches are not alternate sources of truth.
 
-## Current phase — stabilization freeze
+## Current phase — post-stabilization KDE validation
 
-As of 2026-09-30, feature expansion is temporarily frozen while the current product foundation is solidified.
+The 2026-09-30 stabilization gate is **PASS** and the temporary feature freeze is lifted.
 
-During the freeze:
-- A1/A2/A3/B1/B2/B3 work only on correctness, tests, security, CI, documentation, packaging baseline, stale capability reporting, validation, and verified-obsolete cleanup.
-- Research may continue but produces backlog/architecture input only; it does not activate implementation.
-- Security A/B re-audit the exact stabilization head.
-- No new product feature is activated until the Supervisor records the freeze as PASS in Issue #47.
+Controlled product development may resume under the Supervisor and Issue #47. The next priority is real Plasma/KDE evidence for the existing safe vertical slice before broader feature expansion:
+- detect real Plasma capability;
+- preview the actual current state;
+- snapshot/journal;
+- apply a safe reviewed change;
+- validate the effective/visible result;
+- rollback/unapply to the exact prior state.
 
-The freeze ends only after the stabilization PR is green, documentation/process state matches reality, obsolete active-tree material is classified, and every remaining blocker is explicit.
+A1/A2/A3/B1/B2/B3 retain bounded, non-overlapping write-sets. Research remains backlog input until the Supervisor explicitly adopts it. Security A/B re-audit exact heads whenever security-sensitive boundaries change.
 
 ## Coordination
 
@@ -55,7 +57,7 @@ Do not delete:
 - no direct publication from development workflows;
 - filesystem/profile/transaction boundaries remain bounded and regression-tested.
 
-`integration/canonical` is protected by an active repository ruleset with PR-required integration, required up-to-date checks, no force pushes/deletion and no bypass actors. `main` has had its legacy write-capable workflows removed and all four release-line checks have been proven on a temporary validation PR, but the final `main` ruleset and stale-branch cleanup must still be completed before repository-wide Security B can PASS.
+`integration/canonical` and `main` are both protected by active repository rulesets with PR-required integration, strict/up-to-date required checks, no force pushes/deletion and no bypass actors. Legacy write-capable `main` workflows have been removed, the four release-line checks were proven on a temporary validation PR, stale topic branches were cleaned, and automatic merged-head deletion is enabled. Repository-wide Security B is PASS for the current stabilization boundary.
 
 ## Release
 
