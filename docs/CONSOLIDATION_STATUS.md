@@ -1,32 +1,16 @@
-# Consolidation status
+# Historical consolidation snapshot
 
-Date: 2026-09-28
+Date of snapshot: 2026-09-28
 
-## Final state
+This file is retained only as a compact historical record of the repository-recovery/consolidation phase. It is **not current project status**.
 
-**Repository centralization: COMPLETE.**
+At that point the project had centralized surviving GitHub evidence into `integration/canonical`, preserved unrecoverable-source evidence, removed legacy publisher scaffolding, and moved from recovery into a clean rebuild.
 
-GitHub is the only surviving authoritative storage for this project.
+Subsequent development created and merged new specialist branches/PRs, so historical statements such as “exactly two branches” must not be interpreted as current facts.
 
-- `integration/canonical` is the sole active source-of-truth and rebuild line.
-- `main` remains the preserved stable historical branch and was not rewritten by consolidation.
-- There are no open pull requests.
-- All superseded topic/history branches were deleted after their unique content was classified and preserved.
-- The repository now has exactly two branches: `main` and `integration/canonical`.
-- Legacy direct/force-publish workflows and obsolete READY trigger scaffolding are absent from the current canonical tree.
-- Repetitive consolidation documentation has been reduced to a compact canonical record.
-- Historical source fragments and failed recovery evidence remain preserved explicitly under `recovery-evidence/`, `source-package/`, validation scripts, Git history, and closed PR history.
+For current state use:
+- [PROJECT_STATUS.md](PROJECT_STATUS.md)
+- Issue #47 coordination ledger
+- live GitHub refs/PR/check status
 
-## Validation evidence
-
-- Final consolidation workflow-regression guard: PASS, Actions run `36413972648`.
-- Superseded-branch cleanup: PASS, Actions run `36414812932`.
-- Historical three-part source recovery re-test: FAIL as expected, Actions run `36413607567`; pinned SHA-256 did not match and extraction was not attempted.
-
-## Recovery conclusion
-
-The complete original application source cannot be reconstructed from the GitHub bytes that remain. The historical recovery issue #2 is closed with this evidence preserved.
-
-The active P0 is issue #40: **rebuild complete application source on canonical foundation**.
-
-Centralization is no longer a blocker. Product reconstruction is the next phase.
+Detailed failed-recovery evidence remains in [RECOVERY_EVIDENCE.md](RECOVERY_EVIDENCE.md), explicit evidence directories and Git history.
