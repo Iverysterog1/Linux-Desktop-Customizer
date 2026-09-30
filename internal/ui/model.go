@@ -50,7 +50,7 @@ func FoundationModelForLocale(version string, registry *adapter.Registry, locale
 	m := Model{
 		Product:      "Linux Desktop Customizer",
 		Version:      version,
-		Mode:         "rebuild-foundation",
+		Mode:         "stabilization",
 		Locale:       locale,
 		BrandTagline: message(locale, "splash.tagline"),
 		Screens: []Screen{
