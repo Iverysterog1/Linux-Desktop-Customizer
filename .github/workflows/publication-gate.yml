@@ -2,12 +2,15 @@ name: Publication verification gate
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
   verify:
+    name: Publication verification
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
