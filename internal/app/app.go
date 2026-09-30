@@ -3,9 +3,11 @@ package app
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/adapter"
+	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/platform"
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/transaction"
 )
 
@@ -30,7 +32,18 @@ func New() (*Runtime, error) {
 	if err != nil {
 		return nil, err
 	}
-	registry, err := adapter.NewRegistry(fileAdapter)
+	adapters := []adapter.Adapter{fileAdapter}
+
+	kdeStatus := platform.ProbeKDE(os.Getenv, exec.LookPath)
+	if kdeRuntimeReady(kdeStatus) {
+		kdeAdapter, err := adapter.NewKDEConfigAdapter()
+		if err != nil {
+			return nil, fmt.Errorf("app: initialize KDE adapter after successful readiness detection: %w", err)
+		}
+		adapters = append(adapters, kdeAdapter)
+	}
+
+	registry, err := adapter.NewRegistry(adapters...)
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +61,23 @@ func New() (*Runtime, error) {
 		ManagedDir: managedDir,
 		StateDir:   stateDir,
 	}, nil
+}
+
+func kdeRuntimeReady(status platform.KDEStatus) bool {
+	if !status.Detected {
+		return false
+	}
+	readAvailable := false
+	writeAvailable := false
+	for _, command := range status.Commands {
+		switch command.Name {
+		case "kreadconfig6":
+			readAvailable = command.Available
+		case "kwriteconfig6":
+			writeAvailable = command.Available
+		}
+	}
+	return readAvailable && writeAvailable
 }
 
 func managedDir() (string, error) {
