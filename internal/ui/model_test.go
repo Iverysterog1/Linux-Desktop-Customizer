@@ -28,7 +28,7 @@ func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 		t.Fatal(err)
 	}
 	m := FoundationModel("test", r)
-	if m.Mode != "rebuild-foundation" {
+	if m.Mode != "stabilization" {
 		t.Fatalf("mode = %q", m.Mode)
 	}
 	if m.Locale != LocaleEnglish {
