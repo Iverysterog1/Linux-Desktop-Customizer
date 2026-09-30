@@ -26,17 +26,21 @@ An active repository ruleset now enforces:
 - branch deletion blocked;
 - zero bypass actors.
 
-### main — workflow hardening PASS / final ruleset pending
+### main — PASS
 
 PR #75 removed the legacy write-capable bootstrap/finalize/beta/recovery/sync/tag workflows from `main` and replaced them with the reviewed read-only validation set. A temporary draft PR from `integration/canonical` to `main` (#76) then proved all four release-line checks PASS on the full canonical candidate and was closed without merge.
 
-`main` is still missing the final repository ruleset. Before FINAL READY, it must have repository-enforced:
+`main` now has an active repository ruleset enforcing:
 - pull requests;
-- `Canonical CI`, `Race verification`, `Workflow write guard`, and `Publication verification`;
+- strict/up-to-date `Canonical CI`, `Race verification`, `Workflow write guard`, and `Publication verification`;
+- required conversation resolution;
+- squash-only merging;
 - force-push protection;
 - deletion protection;
-- no broad bypass.
+- zero bypass actors.
 
-Until the `main` release-line rules are applied/reverified and stale topic refs are cleaned/relisted, repository-wide **Security B remains FAIL — MEDIUM**.
+The active branch inventory contains only `main` and `integration/canonical`, and automatic deletion of merged head branches is enabled.
+
+Repository-wide **Security B: PASS** for the current stabilization boundary.
 
 No code or workflow workaround is considered equivalent to repository-enforced protection.
