@@ -3,14 +3,6 @@ name: Rebuild foundation CI
 on:
   pull_request:
     branches: [integration/canonical]
-    paths:
-      - 'go.mod'
-      - 'go.sum'
-      - '**/*.go'
-      - 'packaging/**'
-      - 'scripts/test-install-user.sh'
-      - 'scripts/validate-desktop-entry.sh'
-      - '.github/workflows/ci.yml'
   workflow_dispatch:
 
 permissions:
