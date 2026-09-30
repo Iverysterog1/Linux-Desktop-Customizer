@@ -31,8 +31,7 @@ The project is not release-ready. Outstanding gates include:
 - clean real-Linux install/run/uninstall validation;
 - real application screenshots;
 - final security/supply-chain validation;
-- branch protection on `integration/canonical`;
-- an owner-selected software license and canonical `LICENSE` file.
+- branch protection on `integration/canonical`.
 
 ## Security
 
@@ -40,4 +39,4 @@ Security A is currently PASS on the integrated code boundary.
 
 Security B remains **FAIL — MEDIUM** until repository administration protects `integration/canonical` with PR-required integration, required checks, and force-push/delete prevention.
 
-No release or promotion to `main` is authorized.
+Software licensing is now settled as **0BSD**. No release or promotion to `main` is authorized.

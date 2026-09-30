@@ -51,7 +51,7 @@ A green build alone is not FINAL READY. Every applicable gate below needs eviden
 
 ## Licensing / provenance
 
-- [ ] The owner has selected the software license and a canonical `LICENSE` file is present.
+- [x] The owner selected 0BSD and a canonical `LICENSE` file is present.
 - [ ] Project-owned/generated assets have documented licensing.
 - [ ] Third-party assets/components have provenance and compatible licensing.
 

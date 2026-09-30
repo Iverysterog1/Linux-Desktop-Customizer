@@ -14,6 +14,7 @@ All notable project changes should be recorded here. Development branch names ar
 - Restored least-privilege CI with unit/integration, vet, race, build and installer checks.
 
 ### Stabilization
+- Adopted the BSD Zero Clause License (0BSD) for unrestricted use, modification and distribution subject to the license disclaimer.
 - Foundation milestone #40 completed; final product readiness continues under #47/#6.
 - Current work is temporarily frozen to correctness/security/CI/docs/cleanup before feature expansion resumes.
 - Branch protection for `integration/canonical` remains an administrative release blocker until enabled and reverified.
