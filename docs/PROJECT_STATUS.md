@@ -31,7 +31,8 @@ The project is not release-ready. Outstanding gates include:
 - clean real-Linux install/run/uninstall validation;
 - real application screenshots;
 - final security/supply-chain validation;
-- branch protection on `integration/canonical`.
+- branch protection on `integration/canonical`;
+- an owner-selected software license and canonical `LICENSE` file.
 
 ## Security
 
