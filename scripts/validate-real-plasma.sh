@@ -98,7 +98,7 @@ if [[ -z "$target" ]]; then
   exit 2
 fi
 
-if [[ ! "$target" =~ ^[A-Za-z0-9._+-]+$ ]]; then
+if [[ "$target" == "." || "$target" == ".." || ! "$target" =~ ^[A-Za-z0-9._+-]+$ ]]; then
   echo "RESULT=BLOCKED"
   echo "reason=validation target must be a simple installed scheme identifier"
   exit 2
