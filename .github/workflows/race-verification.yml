@@ -4,11 +4,6 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [integration/canonical]
-    paths:
-      - 'go.mod'
-      - 'go.sum'
-      - '**/*.go'
-      - 'packaging/**'
 
 permissions:
   contents: read
