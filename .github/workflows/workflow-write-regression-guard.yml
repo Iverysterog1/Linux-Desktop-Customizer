@@ -2,7 +2,7 @@ name: Workflow write regression guard
 
 on:
   pull_request:
-    branches: [integration/canonical]
+    branches: [integration/canonical, main]
 
 permissions:
   contents: read
