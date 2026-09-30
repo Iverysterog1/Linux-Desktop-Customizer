@@ -2,9 +2,7 @@ name: Workflow write regression guard
 
 on:
   pull_request:
-    paths:
-      - '.github/workflows/**'
-      - '.github/scripts/check-workflow-write-regressions.sh'
+    branches: [integration/canonical]
 
 permissions:
   contents: read
