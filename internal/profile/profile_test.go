@@ -2,6 +2,8 @@ package profile
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -127,5 +129,24 @@ func TestParseRejectsTrailingJSON(t *testing.T) {
 	_, err := Parse([]byte(data))
 	if err == nil || !strings.Contains(err.Error(), "multiple JSON values") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+
+func TestRealPlasmaValidationFixturesUseSafeProfileSchema(t *testing.T) {
+	t.Parallel()
+	for _, name := range []string{"kde-real-breeze-dark.json", "kde-real-breeze-light.json"} {
+		path := filepath.Join("..", "..", "testdata", "profiles", name)
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+		p, err := Parse(data)
+		if err != nil {
+			t.Fatalf("Parse(%s): %v", path, err)
+		}
+		if len(p.Operations) != 1 || p.Operations[0].Adapter != "kde-config" || p.Operations[0].Key != "color-scheme" || p.Operations[0].Action != ActionSet {
+			t.Fatalf("unsafe or unexpected fixture %s: %+v", name, p)
+		}
 	}
 }
