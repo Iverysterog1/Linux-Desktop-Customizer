@@ -29,6 +29,9 @@ var catalog = map[string]messages{
 		"splash.tagline": "Created by one. Improved by many. Available to all.",
 		"a11y.high_contrast": "High contrast",
 		"a11y.keyboard": "Keyboard navigation",
+		"validation.kde.title": "Real Plasma validation",
+		"validation.kde.not_run": "The reviewed KDE path is available, but visible apply/rollback has not yet been verified in this runtime.",
+		"validation.kde.blocked": "Real Plasma validation is blocked because the reviewed KDE adapter is not available in this runtime.",
 	},
 	LocalePortuguese: {
 		"screen.home.title": "Início",
@@ -49,6 +52,9 @@ var catalog = map[string]messages{
 		"splash.tagline": "Criado por um. Melhorado por muitos. Disponível para todos.",
 		"a11y.high_contrast": "Alto contraste",
 		"a11y.keyboard": "Navegação por teclado",
+		"validation.kde.title": "Validação Plasma real",
+		"validation.kde.not_run": "O caminho KDE revisto está disponível, mas aplicar/desfazer com efeito visível ainda não foi validado neste runtime.",
+		"validation.kde.blocked": "A validação Plasma real está bloqueada porque o adaptador KDE revisto não está disponível neste runtime.",
 	},
 }
 
