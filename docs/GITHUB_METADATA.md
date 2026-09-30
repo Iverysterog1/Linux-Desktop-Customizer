@@ -1,21 +1,29 @@
 # GitHub presentation metadata
 
-Public repository metadata must describe the software conservatively and match verified repository state.
+Public repository metadata must describe only verified software state.
 
-Suggested description: Linux desktop customization project focused on flexible, user-controlled desktop appearance and behavior.
+Suggested description:
+> Privacy-first Linux desktop customization project with preview, reversible changes, safe profiles and KDE-first support.
 
-Do not advertise unreleased recovery branches as stable releases. Social preview images and screenshots should come from reproducible builds of the corresponding version and must not imply functionality that is absent from the canonical source.
+Suggested topics:
+`linux`, `linux-desktop`, `desktop-customization`, `personalization`, `theming`, `privacy`, `open-source`, `kde`.
 
-Suggested topics, once supported by canonical source: linux, linux-desktop, desktop-customization, personalization, theming, theme-manager, privacy, open-source, desktop-environment, effects.
+## Current presentation state
 
-## Version display during recovery
+- The historical 0.9.0 release remains a historical baseline only.
+- The current rebuilt canonical line is **unreleased** and under stabilization.
+- Do not advertise old recovery/development labels (including the historical “0.11 Effects Composer” line) as the current product version.
+- Do not claim full KDE/GNOME/XFCE support; current reviewed KDE runtime capability is intentionally limited.
+- Do not claim DEB/RPM/release readiness until package validation exists.
 
-- **Public baseline:** 0.9.0.
-- **Development line:** 0.11 Effects Composer.
-- **Repository state:** source recovery / hardening.
+## Screenshots and social preview
 
-Do not label 0.11 as a stable release until authoritative source is recovered, validated and deliberately published.
+Use real project-owned artwork and screenshots from the actual validated application. Never use generated/mock application screenshots as release evidence.
 
-## Social preview and README images
+Before public screenshots:
+- build from the exact reviewed commit;
+- record Linux/desktop/protocol context;
+- avoid private paths, usernames, tokens, notifications and unrelated personal data;
+- follow `docs/REAL_LINUX_SCREENSHOTS.md`.
 
-Use the project name, a short verified phrase, Linux-oriented project-owned artwork and real screenshots from a reproducible build. Do not use vendor logos, unrelated images or fabricated application screenshots. The detailed evidence rules are in `docs/media/README.md`.
+Repository metadata should be updated again only when a release candidate has verified version/package/screenshot evidence.
