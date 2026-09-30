@@ -1,0 +1,26 @@
+name: Workflow write regression guard
+
+on:
+  pull_request:
+    branches: [integration/canonical, main]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Workflow write guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Audit changed workflows
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          mapfile -t files < <(git diff --name-only "$base" HEAD -- '.github/workflows/*.yml' '.github/workflows/*.yaml')
+          bash .github/scripts/check-workflow-write-regressions.sh "${files[@]}"
