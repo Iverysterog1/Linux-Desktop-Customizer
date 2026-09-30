@@ -2,7 +2,7 @@
 
 > **Created by one. Improved by many. Available to all.**
 
-![Status](https://img.shields.io/badge/status-stabilization-blue)
+![Status](https://img.shields.io/badge/status-KDE%20validation-blue)
 ![Next](https://img.shields.io/badge/next-real%20KDE%20validation-orange)
 ![Safety](https://img.shields.io/badge/repository-read--only%20CI-blue)
 
@@ -11,7 +11,7 @@
 The product direction remains simple: **preview → review → apply → undo**.
 
 > [!IMPORTANT]
-> The clean rebuild foundation is complete. The project is currently under a stabilization freeze before feature expansion resumes. The original complete historical source was not recoverable; preserved fragments remain evidence only and are not presented as reconstructed source.
+> The clean rebuild foundation and repository stabilization are complete. Development is now in the KDE/Plasma validation phase. The original complete historical source was not recoverable; preserved fragments remain evidence only and are not presented as reconstructed source.
 
 ## Repository state
 
@@ -37,20 +37,22 @@ There is no separate PC or external authoritative copy. The failures are documen
 
 Issue #40 (rebuild foundation) is complete and closed. Current coordination and final-readiness work is tracked in **Issue #47**, while **Issue #6** remains the product/UX contract.
 
-Before new features resume, the project is solidifying the current canonical state:
+The immediate priority is to prove the existing safe KDE path on a real Plasma session:
 
-1. align capability/UI reporting with the integrated runtime;
-2. keep profiles, transactions, filesystem and KDE boundaries security-reviewed;
-3. keep CI/publication verification aligned with the reconstructed repository;
-4. remove verified-obsolete active-tree material and stale topic refs;
-5. prove the KDE flow on a real Plasma session;
-6. complete graphical apply/history/undo and distribution only after stabilization is green.
+1. detect the real Plasma runtime and required utilities;
+2. preview the current color-scheme change;
+3. snapshot/journal the transaction;
+4. apply the reviewed scoped change;
+5. confirm both config read-back and a genuine visible effect;
+6. rollback to the exact prior state.
+
+The guarded procedure is documented in [Real KDE Plasma validation](docs/REAL_PLASMA_VALIDATION.md). Broader graphical mutation remains gated until that real-session proof is complete.
 
 ## Resumo em português
 
 O LDC já tem a fundação reconstruída: CLI, interface gráfica local, perfis declarativos seguros, transações com rollback, integração KDE limitada ao esquema de cores, EN + pt-PT, instalação por utilizador e CI com testes/vet/race.
 
-Ainda **não é uma versão final**. Falta provar o percurso completo num Plasma real, completar o fluxo gráfico de aplicar/desfazer, criar e validar pacotes DEB/RPM, testar instalação limpa em Linux, obter screenshots reais e fechar a proteção administrativa de `integration/canonical`.
+Ainda **não é uma versão final**. A estabilização do repositório e a proteção de `main` e `integration/canonical` estão concluídas. Falta provar o percurso completo num Plasma real, completar o fluxo gráfico de aplicar/desfazer, criar e validar pacotes DEB/RPM, testar instalação limpa em Linux e obter screenshots reais.
 
 ## Product direction
 
@@ -74,7 +76,7 @@ These are requirements, not claims that the current repository already ships a w
 
 There is currently **no supported release build**. The graphical runtime is still read-only for mutation, while the CLI/backend already contains a reviewed, scoped KDE color-scheme path with preview/apply/rollback primitives. That backend path still requires real Plasma end-to-end validation before the graphical mutation flow is enabled.
 
-For bilingual English/Portuguese build and safe loopback launch instructions, see [Graphical UI onboarding](docs/GETTING_STARTED_UI.md). Real project screenshots must follow the [real Linux screenshot evidence procedure](docs/REAL_LINUX_SCREENSHOTS.md); mockups or generated substitutes do not satisfy the release gate.
+For bilingual English/Portuguese build and safe loopback launch instructions, see [Graphical UI onboarding](docs/GETTING_STARTED_UI.md). The guarded real-session test is documented in [Real KDE Plasma validation](docs/REAL_PLASMA_VALIDATION.md). Real project screenshots must follow the [real Linux screenshot evidence procedure](docs/REAL_LINUX_SCREENSHOTS.md); mockups or generated substitutes do not satisfy the release gate.
 
 Packaging/release remains gated on real Plasma validation, complete graphical flow, DEB/RPM and trusted terminal distribution, clean Linux install/run/uninstall, real screenshots, final security/supply-chain review, branch protection and explicit publication authorization.
 
@@ -94,7 +96,7 @@ See [Security testing policy](SECURITY_TESTING_POLICY.md) and [Security baseline
 
 ## Contributing
 
-New implementation work starts from **`integration/canonical`** and uses a short-lived topic branch with visible validation. During the stabilization freeze, only correctness/security/CI/docs/cleanup work should land. Do not write or force-push directly to `main` or bypass review on canonical.
+New implementation work starts from **`integration/canonical`** and uses a short-lived topic branch with visible validation. Both long-lived branches are protected and all changes return through reviewed PRs with required checks. Do not write or force-push directly to `main` or bypass review on canonical.
 
 Security-sensitive reports must not include credentials, private files or secrets.
 

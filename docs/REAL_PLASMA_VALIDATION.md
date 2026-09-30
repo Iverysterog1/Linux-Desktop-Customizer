@@ -98,6 +98,17 @@ Only use `PASS` after actually observing the visible change.
 - only the read-only preflight was executed;
 - config apply/rollback ran but visible confirmation was not performed.
 
+## Automated regression coverage
+
+CI runs `scripts/test-real-plasma-harness.sh` with local fake KDE/CLI commands. That test verifies:
+- read-only default behavior;
+- mutation remains blocked without explicit opt-in;
+- unsafe dot-only scheme identifiers are rejected;
+- simulated config apply + visible PASS + rollback produces the expected PASS result;
+- simulated visible FAIL still rolls back and returns FAIL.
+
+This is control-flow/security regression coverage only. It **never counts as real Plasma evidence** and cannot change the real-session result from NOT RUN.
+
 ## Evidence to preserve in Issue #47
 
 Record:
