@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -34,6 +35,32 @@ func TestParseRejectsExecutableOrUnknownFields(t *testing.T) {
 		if _, err := Parse([]byte(data)); err == nil {
 			t.Fatalf("expected unknown executable field to be rejected: %s", data)
 		}
+	}
+}
+
+func TestParseRejectsDuplicateKeys(t *testing.T) {
+	t.Parallel()
+	data := []byte(`{"version":1,"name":"one","name":"two","operations":[{"adapter":"kde-config","action":"set","key":"a"}]}`)
+	_, err := Parse(data)
+	if err == nil || !strings.Contains(err.Error(), "duplicate object key") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestParseRejectsResourceAbuse(t *testing.T) {
+	t.Parallel()
+
+	validPrefix := []byte(`{"version":1,"name":"one","operations":[{"adapter":"kde-config","action":"set","key":"a","value":"`)
+	validSuffix := []byte(`"}]}`)
+	oversized := append(append(validPrefix, bytes.Repeat([]byte("x"), maxProfileBytes)...), validSuffix...)
+	if _, err := Parse(oversized); err == nil || !strings.Contains(err.Error(), "document exceeds") {
+		t.Fatalf("oversized document error = %v", err)
+	}
+
+	deep := `{"version":1,"name":"one","operations":[{"adapter":"kde-config","action":"set","key":"a","extra":` +
+		strings.Repeat("[", maxJSONDepth+2) + "0" + strings.Repeat("]", maxJSONDepth+2) + `}]}`
+	if _, err := Parse([]byte(deep)); err == nil || !strings.Contains(err.Error(), "nesting exceeds") {
+		t.Fatalf("deep nesting error = %v", err)
 	}
 }
 
@@ -74,12 +101,23 @@ func TestValidateRejectsUnsafeShape(t *testing.T) {
 		{Version: 1, Name: "empty-ops"},
 		{Version: 1, Name: "empty-key", Operations: []Operation{{Adapter: "kde-config", Action: ActionSet}}},
 		{Version: 1, Name: "nul-key", Operations: []Operation{{Adapter: "kde-config", Action: ActionSet, Key: "a\x00b"}}},
+		{Version: 1, Name: "long-key", Operations: []Operation{{Adapter: "kde-config", Action: ActionSet, Key: strings.Repeat("k", maxKeyBytes+1)}}},
+		{Version: 1, Name: "long-value", Operations: []Operation{{Adapter: "kde-config", Action: ActionSet, Key: "a", Value: strings.Repeat("v", maxValueBytes+1)}}},
 		{Version: 1, Name: "unset-value", Operations: []Operation{{Adapter: "local-file", Action: ActionUnset, Key: "a", Value: "unexpected"}}},
 	}
 	for _, p := range cases {
 		if err := Validate(p); err == nil {
 			t.Fatalf("expected invalid profile to be rejected: %+v", p)
 		}
+	}
+}
+
+func TestParseRejectsInvalidUTF8(t *testing.T) {
+	t.Parallel()
+	data := append([]byte(`{"version":1,"name":"one","operations":[{"adapter":"kde-config","action":"set","key":"a"}]}`), 0xff)
+	_, err := Parse(data)
+	if err == nil || !strings.Contains(err.Error(), "valid UTF-8") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
