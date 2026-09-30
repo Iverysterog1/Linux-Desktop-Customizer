@@ -65,6 +65,9 @@ case "${3:-}" in
   "status": "applied"
 }
 JSON
+    if [[ "${LDC_TEST_APPLY_FAIL:-}" == "YES" ]]; then
+      exit 1
+    fi
     ;;
   rollback)
     printf '%s\n' "BreezeLight" >"$LDC_TEST_STATE"
@@ -162,3 +165,22 @@ grep -Fq "RESULT=FAIL" "$fail_out"
 [[ "$(cat "$state")" == "BreezeLight" ]]
 
 echo "real Plasma harness regression checks: PASS"
+
+
+reset_fixture
+apply_fail_out="$tmp/apply-fail.out"
+set +e
+LDC_TEST_APPLY_FAIL=YES \
+LDC_REAL_PLASMA_MUTATION=YES \
+LDC_REAL_PLASMA_VISIBLE_RESULT=PASS \
+  bash scripts/validate-real-plasma.sh --apply --target BreezeDark >"$apply_fail_out" 2>&1
+apply_fail_status=$?
+set -e
+[[ "$apply_fail_status" -eq 1 ]]
+grep -Fq "RESULT=FAIL" "$apply_fail_out"
+grep -Fq "apply command failed after returning transaction id" "$apply_fail_out"
+grep -Fq "emergency_rollback=attempt" "$apply_fail_out"
+grep -Fq "go run ./cmd/ltc rollback --transaction 0123456789abcdef0123456789abcdef" "$trace"
+[[ "$(cat "$state")" == "BreezeLight" ]]
+
+echo "partial apply failure rollback regression: PASS"
