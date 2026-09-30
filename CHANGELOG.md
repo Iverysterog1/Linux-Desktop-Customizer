@@ -18,7 +18,9 @@ All notable project changes should be recorded here. Development branch names ar
 - Foundation milestone #40 completed; final product readiness continues under #47/#6.
 - Current work is temporarily frozen to correctness/security/CI/docs/cleanup before feature expansion resumes.
 - Activated repository rules protecting `integration/canonical` with required PR/check enforcement and no bypass actors.
-- Release-line `main` rules and stale topic-branch cleanup remain administrative stabilization work.
+- Removed the legacy write/force-push/tag workflow surface from `main` via security-only PR #75.
+- Proved all four release-line checks PASS on the full canonical candidate using temporary PR #76, then closed it without merge.
+- Final `main` ruleset enforcement and stale topic-branch cleanup remain administrative stabilization work.
 
 ### Historical recovery
 - The complete original application source was not recoverable from surviving GitHub bytes.

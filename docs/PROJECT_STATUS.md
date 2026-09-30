@@ -27,7 +27,7 @@ Current canonical includes:
 ## Not final yet
 
 The project is not release-ready. Outstanding gates include:
-- equivalent required-check protection for `main`;
+- final repository ruleset enforcement for `main` using the four validated release-line checks;
 - cleanup/revalidation of superseded topic branches;
 - real Plasma end-to-end apply/visible validation/rollback evidence;
 - complete graphical preview/apply/history/undo flow;
@@ -42,6 +42,8 @@ Security A is currently PASS on the integrated code boundary.
 
 The previous `integration/canonical` protection finding is resolved: an active ruleset now requires pull requests, up-to-date required checks (`Canonical CI`, `Race verification`, `Workflow write guard`), conversation resolution, blocks force pushes and deletion, and has no bypass actors.
 
-Repository-wide Security B remains **FAIL — MEDIUM** until `main` receives the equivalent release-line rules with `Publication verification` additionally required and is reverified.
+`main` has now been hardened by PR #75: the legacy write/force-push/tag workflows were removed and replaced by the four reviewed read-only validation workflows. A temporary canonical-to-main PR (#76) proved `Canonical CI`, `Race verification`, `Workflow write guard`, and `Publication verification` all PASS against the full canonical candidate and was then closed without merge.
+
+Repository-wide Security B remains **FAIL — MEDIUM** only until `main` receives the final repository ruleset requiring those four checks, force-push/deletion protection and no broad bypass, and the stale branch inventory is cleaned/reverified.
 
 Software licensing is settled as **0BSD**. No release or promotion to `main` is authorized.
