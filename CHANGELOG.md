@@ -16,11 +16,13 @@ All notable project changes should be recorded here. Development branch names ar
 ### Stabilization
 - Adopted the BSD Zero Clause License (0BSD) for unrestricted use, modification and distribution subject to the license disclaimer.
 - Foundation milestone #40 completed; final product readiness continues under #47/#6.
-- Current work is temporarily frozen to correctness/security/CI/docs/cleanup before feature expansion resumes.
+- The temporary stabilization freeze completed successfully on 2026-09-30; controlled product development may resume.
 - Activated repository rules protecting `integration/canonical` with required PR/check enforcement and no bypass actors.
 - Removed the legacy write/force-push/tag workflow surface from `main` via security-only PR #75.
 - Proved all four release-line checks PASS on the full canonical candidate using temporary PR #76, then closed it without merge.
-- Final `main` ruleset enforcement and stale topic-branch cleanup remain administrative stabilization work.
+- Activated the final `main` ruleset with strict required release-line checks, force-push/deletion blocking and no bypass actors.
+- Removed all stale topic branches; only `main` and `integration/canonical` remain, with automatic merged-head branch deletion enabled.
+- Security B moved to PASS for the current stabilization boundary.
 
 ### Historical recovery
 - The complete original application source was not recoverable from surviving GitHub bytes.
