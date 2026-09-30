@@ -6,7 +6,7 @@ Suggested description:
 > Privacy-first Linux desktop customization project with preview, reversible changes, safe profiles and KDE-first support.
 
 Suggested topics:
-`linux`, `linux-desktop`, `desktop-customization`, `personalization`, `theming`, `privacy`, `open-source`, `kde`.
+`linux`, `linux-desktop`, `desktop-customization`, `personalization`, `theming`, `privacy`, `kde`.
 
 ## Current presentation state
 
