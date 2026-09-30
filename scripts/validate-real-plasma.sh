@@ -117,12 +117,14 @@ rollback_done=false
 
 cleanup() {
   if [[ -n "$txid" && "$rollback_done" != true ]]; then
+    rollback_done=true
     echo "emergency_rollback=attempt"
     go run ./cmd/ltc rollback --transaction "$txid" >/dev/null 2>&1 || true
   fi
   rm -f "$profile" "$apply_json"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT TERM
 
 cat >"$profile" <<EOF
 {
