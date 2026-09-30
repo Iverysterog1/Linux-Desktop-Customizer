@@ -6,7 +6,7 @@
 ![Next](https://img.shields.io/badge/next-real%20KDE%20validation-orange)
 ![Safety](https://img.shields.io/badge/repository-read--only%20CI-blue)
 
-**Linux Desktop Customizer** is a privacy-first open-source project for personalizing the Linux desktop from one place: themes, wallpapers, icons, cursors, windows, panels, effects, sounds and other desktop appearance settings.
+**Linux Desktop Customizer** is a privacy-first Linux desktop customization project for personalizing the Linux desktop from one place: themes, wallpapers, icons, cursors, windows, panels, effects, sounds and other desktop appearance settings.
 
 The product direction remains simple: **preview → review → apply → undo**.
 
