@@ -6,7 +6,9 @@ A green build alone is not FINAL READY. Every applicable gate below needs eviden
 
 - [x] Clean rebuilt Go foundation exists on `integration/canonical`.
 - [x] CLI/UI and safe transaction/profile boundaries exist.
-- [ ] `integration/canonical` is protected: PR required, required checks enforced, force-push/delete blocked.
+- [x] `integration/canonical` is protected: PR required, required checks enforced, force-push/delete blocked.
+- [ ] `main` has equivalent protected-PR rules plus required `Publication verification`.
+- [ ] Superseded topic branches are cleaned up and the branch inventory is reverified.
 - [ ] Final promotion to `main` occurs only through a protected PR.
 - [ ] Target version/changelog/release notes are internally consistent.
 
@@ -16,7 +18,7 @@ A green build alone is not FINAL READY. Every applicable gate below needs eviden
 - [ ] `go vet ./...` PASS.
 - [ ] `go test -race ./...` PASS.
 - [ ] CLI and UI builds PASS.
-- [ ] Publication verification gate PASS.
+- [ ] Publication verification gate PASS on the release candidate.
 - [ ] Security A has no unresolved release blocker.
 - [ ] Security B / supply-chain review PASS.
 - [ ] No credentials, tokens, private paths or user data in source/artifacts.

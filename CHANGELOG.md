@@ -17,7 +17,8 @@ All notable project changes should be recorded here. Development branch names ar
 - Adopted the BSD Zero Clause License (0BSD) for unrestricted use, modification and distribution subject to the license disclaimer.
 - Foundation milestone #40 completed; final product readiness continues under #47/#6.
 - Current work is temporarily frozen to correctness/security/CI/docs/cleanup before feature expansion resumes.
-- Branch protection for `integration/canonical` remains an administrative release blocker until enabled and reverified.
+- Activated repository rules protecting `integration/canonical` with required PR/check enforcement and no bypass actors.
+- Release-line `main` rules and stale topic-branch cleanup remain administrative stabilization work.
 
 ### Historical recovery
 - The complete original application source was not recoverable from surviving GitHub bytes.
