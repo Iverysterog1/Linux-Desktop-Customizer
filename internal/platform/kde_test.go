@@ -2,6 +2,7 @@ package platform
 
 import (
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -42,6 +43,9 @@ func TestProbeKDEPlasma6WaylandFractionalScale(t *testing.T) {
 	}
 	if !got.Capabilities[0].Supported || !got.Capabilities[1].Supported || !got.Capabilities[2].Supported {
 		t.Fatalf("expected config/theme capabilities: %+v", got.Capabilities)
+	}
+	if strings.Contains(got.Capabilities[0].Reason, "disabled until") {
+		t.Fatalf("stale capability wording: %q", got.Capabilities[0].Reason)
 	}
 	if got.Capabilities[3].Supported {
 		t.Fatalf("qdbus6 should be unavailable: %+v", got.Capabilities[3])
