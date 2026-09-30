@@ -6,12 +6,13 @@ Suggested description:
 > Privacy-first Linux desktop customization project with preview, reversible changes, safe profiles and KDE-first support.
 
 Suggested topics:
-`linux`, `linux-desktop`, `desktop-customization`, `personalization`, `theming`, `privacy`, `kde`.
+`linux`, `linux-desktop`, `desktop-customization`, `personalization`, `theming`, `privacy`, `open-source`, `kde`.
 
 ## Current presentation state
 
 - The historical 0.9.0 release remains a historical baseline only.
 - The current rebuilt canonical line is **unreleased** and under stabilization.
+- Software license: **0BSD (BSD Zero Clause License)**.
 - Do not advertise old recovery/development labels (including the historical “0.11 Effects Composer” line) as the current product version.
 - Do not claim full KDE/GNOME/XFCE support; current reviewed KDE runtime capability is intentionally limited.
 - Do not claim DEB/RPM/release readiness until package validation exists.
