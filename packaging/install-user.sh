@@ -7,6 +7,18 @@ DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 APPLICATIONS_DIR="$DATA_HOME/applications"
 DESKTOP_ID="io.github.iverysterog1.LinuxDesktopCustomizer.desktop"
 
+ensure_directory() {
+  local path="$1"
+  if [[ -e "$path" ]]; then
+    if [[ ! -d "$path" ]]; then
+      echo "Install destination exists but is not a directory: $path" >&2
+      exit 1
+    fi
+    return
+  fi
+  install -d -m 0755 "$path"
+}
+
 for name in ltc ltc-ui; do
   source_path="$SCRIPT_DIR/$name"
   if [[ ! -f "$source_path" || ! -x "$source_path" ]]; then
@@ -19,8 +31,10 @@ if [[ ! -f "$SCRIPT_DIR/$DESKTOP_ID" ]]; then
   exit 1
 fi
 
-mkdir -p "$BIN_DIR" "$APPLICATIONS_DIR"
-chmod 0755 "$BIN_DIR" "$APPLICATIONS_DIR"
+# Preserve permissions on user-owned directories that already exist.
+# New directories created by this installer use a conservative 0755 mode.
+ensure_directory "$BIN_DIR"
+ensure_directory "$APPLICATIONS_DIR"
 
 for name in ltc ltc-ui; do
   install -m 0755 "$SCRIPT_DIR/$name" "$BIN_DIR/$name"
