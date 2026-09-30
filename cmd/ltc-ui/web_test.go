@@ -14,6 +14,7 @@ func TestGraphicalHandlerPortugueseAndEscaping(t *testing.T) {
 		Version:      "test",
 		Locale:       ui.LocalePortuguese,
 		BrandTagline: "Criado por um. Melhorado por muitos. Disponível para todos.",
+		KDEValidation: ui.ValidationStatus{ID: "kde.real-plasma", Title: "Validação Plasma real", State: ui.ValidationNotRun, Detail: "Ainda não validado visualmente."},
 		Screens: []ui.Screen{{ID: "home", Title: "Início", Description: "Seguro <script>alert(1)</script>", Enabled: true}},
 		Warnings: []string{"Aviso <b>seguro</b>"},
 	}
