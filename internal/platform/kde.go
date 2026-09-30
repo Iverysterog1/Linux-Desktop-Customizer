@@ -104,7 +104,7 @@ func ProbeKDE(getenv func(string) string, lookPath func(string) (string, error))
 		case !available:
 			reason = fmt.Sprintf("%s not found in PATH", spec.name)
 		default:
-			reason = fmt.Sprintf("%s available; mutation remains disabled until a reviewed adapter is implemented", spec.name)
+			reason = fmt.Sprintf("%s available; command availability alone does not imply a reviewed mutation capability", spec.name)
 		}
 		status.Capabilities = append(status.Capabilities, capability.Capability{
 			ID: spec.id, Supported: supported, Reason: reason,
