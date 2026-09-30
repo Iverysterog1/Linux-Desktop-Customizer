@@ -12,14 +12,31 @@
 - External/mutable inputs require provenance and integrity controls before any trusted use.
 - Secrets must not be exported into arbitrary build steps when narrower authentication is possible.
 
-## Repository rule blocker
+## Repository rule state
 
-`integration/canonical` must be protected before FINAL READY:
+### integration/canonical — PASS
+
+An active repository ruleset now enforces:
+- exact target `integration/canonical`;
 - pull-request-based integration;
-- required validation/status checks appropriate to changed scope;
-- force pushes disabled;
-- branch deletion disabled.
+- required up-to-date checks: `Canonical CI`, `Race verification`, `Workflow write guard`;
+- required conversation resolution;
+- squash merge method;
+- force pushes blocked;
+- branch deletion blocked;
+- zero bypass actors.
 
-The current GitHub connection used by the agents can verify this state but does not expose an administrative branch-protection write operation. Until the owner/admin enables and the Security B role reverifies these rules, **Security B remains FAIL — MEDIUM**.
+### main — pending
 
-No code or workflow workaround is considered equivalent to repository-enforced branch protection.
+`main` is marked protected by GitHub, but the currently observable legacy protection reports required-status-check enforcement off and there is no repository ruleset for it yet.
+
+Before FINAL READY, `main` must have repository-enforced:
+- pull requests;
+- `Canonical CI`, `Race verification`, `Workflow write guard`, and `Publication verification`;
+- force-push protection;
+- deletion protection;
+- no broad bypass.
+
+Until the `main` release-line rules are applied and reverified, repository-wide **Security B remains FAIL — MEDIUM**.
+
+No code or workflow workaround is considered equivalent to repository-enforced protection.
