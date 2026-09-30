@@ -55,7 +55,7 @@ Do not delete:
 - no direct publication from development workflows;
 - filesystem/profile/transaction boundaries remain bounded and regression-tested.
 
-`integration/canonical` must be protected by repository rules before FINAL READY: PR-required integration, required validation checks, no force pushes, and no branch deletion. Until that is enforced and reverified, Security B remains FAIL.
+`integration/canonical` is protected by an active repository ruleset with PR-required integration, required up-to-date checks, no force pushes/deletion and no bypass actors. `main` has had its legacy write-capable workflows removed and all four release-line checks have been proven on a temporary validation PR, but the final `main` ruleset and stale-branch cleanup must still be completed before repository-wide Security B can PASS.
 
 ## Release
 
