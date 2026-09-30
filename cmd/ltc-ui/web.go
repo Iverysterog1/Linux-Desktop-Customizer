@@ -28,7 +28,7 @@ const graphicalPage = `<!doctype html>
 <div class="nav-list">{{range .Model.Screens}}<a class="screen" href="#{{.ID}}" aria-disabled="{{if .Enabled}}false{{else}}true{{end}}"><strong>{{.Title}}</strong><br><span class="state {{if .Enabled}}available{{else}}gated{{end}}">{{if .Enabled}}{{$.Labels.Available}}{{else}}{{$.Labels.Gated}}{{end}}</span></a>{{end}}</div>
 </nav>
 <main id="content" tabindex="-1">
-<div class="status"><h1>{{.Labels.Status}}</h1><p>{{.Model.Product}} {{.Model.Version}}</p></div>
+<div class="status"><h1>{{.Labels.Status}}</h1><p>{{.Model.Product}} {{.Model.Version}}</p>{{if .Model.KDEValidation.Title}}<p><strong>{{.Model.KDEValidation.Title}}:</strong> {{.Model.KDEValidation.State}} — {{.Model.KDEValidation.Detail}}</p>{{end}}</div>
 {{range .Model.Screens}}<section id="{{.ID}}" aria-labelledby="{{.ID}}-title"><h2 id="{{.ID}}-title">{{.Title}}</h2><p>{{.Description}}</p>{{if .Reason}}<p><strong>{{$.Labels.Gated}}:</strong> {{.Reason}}</p>{{end}}</section>{{end}}
 {{range .Model.Warnings}}<p class="warning"><strong>{{$.Labels.Warning}}:</strong> {{.}}</p>{{end}}
 </main>
