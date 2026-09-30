@@ -37,6 +37,9 @@ func TestBilingualProductStringsStayInParity(t *testing.T) {
 		"screen.desktop.description.kde",
 		"screen.desktop.reason",
 		"warning.safe_adapters",
+		"validation.kde.title",
+		"validation.kde.not_run",
+		"validation.kde.blocked",
 	}
 	for _, key := range keys {
 		if catalog[LocaleEnglish][key] == "" {
