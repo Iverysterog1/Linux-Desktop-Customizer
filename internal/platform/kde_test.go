@@ -18,7 +18,8 @@ func TestProbeKDEPlasma6WaylandFractionalScale(t *testing.T) {
 	paths := map[string]string{
 		"kreadconfig6":     "/usr/bin/kreadconfig6",
 		"kwriteconfig6":    "/usr/bin/kwriteconfig6",
-		"lookandfeeltool6": "/usr/bin/lookandfeeltool6",
+		"lookandfeeltool6":       "/usr/bin/lookandfeeltool6",
+		"plasma-apply-colorscheme": "/usr/bin/plasma-apply-colorscheme",
 	}
 	got := ProbeKDE(
 		func(k string) string { return env[k] },
@@ -49,6 +50,9 @@ func TestProbeKDEPlasma6WaylandFractionalScale(t *testing.T) {
 	}
 	if got.Capabilities[3].Supported {
 		t.Fatalf("qdbus6 should be unavailable: %+v", got.Capabilities[3])
+	}
+	if !got.Capabilities[4].Supported {
+		t.Fatalf("plasma-apply-colorscheme should be detected: %+v", got.Capabilities[4])
 	}
 }
 

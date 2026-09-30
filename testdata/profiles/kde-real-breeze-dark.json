@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "name": "KDE real validation — Breeze Dark",
+  "operations": [
+    {
+      "adapter": "kde-config",
+      "action": "set",
+      "key": "color-scheme",
+      "value": "BreezeDark"
+    }
+  ]
+}

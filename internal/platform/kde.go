@@ -87,6 +87,7 @@ func ProbeKDE(getenv func(string) string, lookPath func(string) (string, error))
 		{"kwriteconfig6", "kde.write-config"},
 		{"lookandfeeltool6", "kde.global-theme"},
 		{"qdbus6", "kde.dbus-reconfigure"},
+		{"plasma-apply-colorscheme", "kde.apply-color-scheme"},
 	}
 
 	for _, spec := range specs {
