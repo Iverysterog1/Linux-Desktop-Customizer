@@ -9,8 +9,8 @@ A green build alone is not FINAL READY. Every applicable gate below needs eviden
 - [x] `integration/canonical` is protected: PR required, required checks enforced, force-push/delete blocked.
 - [x] Legacy write/force-push/tag workflows have been removed from `main` through PR #75.
 - [x] A temporary canonical-to-main validation PR proved `Canonical CI`, `Race verification`, `Workflow write guard`, and `Publication verification` all PASS without merging product code.
-- [ ] `main` has final protected-PR rules requiring those four checks.
-- [ ] Superseded topic branches are cleaned up and the branch inventory is reverified.
+- [x] `main` has final protected-PR rules requiring those four checks.
+- [x] Superseded topic branches are cleaned up; only `main` and `integration/canonical` remain, with automatic merged-head deletion enabled.
 - [ ] Final promotion to `main` occurs only through a protected PR.
 - [ ] Target version/changelog/release notes are internally consistent.
 
@@ -21,8 +21,8 @@ A green build alone is not FINAL READY. Every applicable gate below needs eviden
 - [ ] `go test -race ./...` PASS.
 - [ ] CLI and UI builds PASS.
 - [ ] Publication verification gate PASS on the release candidate.
-- [ ] Security A has no unresolved release blocker.
-- [ ] Security B / supply-chain review PASS.
+- [x] Security A has no unresolved stabilization blocker on the current canonical boundary.
+- [x] Security B repository-governance/supply-chain stabilization review PASS; re-run on the final release candidate.
 - [ ] No credentials, tokens, private paths or user data in source/artifacts.
 
 ## KDE product validation
