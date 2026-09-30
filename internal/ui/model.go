@@ -14,6 +14,22 @@ type Screen struct {
 	Reason      string `json:"reason,omitempty"`
 }
 
+type ValidationState string
+
+const (
+	ValidationNotRun ValidationState = "NOT RUN"
+	ValidationPass    ValidationState = "PASS"
+	ValidationFail    ValidationState = "FAIL"
+	ValidationBlocked ValidationState = "BLOCKED"
+)
+
+type ValidationStatus struct {
+	ID     string          `json:"id"`
+	Title  string          `json:"title"`
+	State  ValidationState `json:"state"`
+	Detail string          `json:"detail"`
+}
+
 type Accessibility struct {
 	ReducedMotionSupported      bool `json:"reduced_motion_supported"`
 	ReadableTextSupported       bool `json:"readable_text_supported"`
@@ -28,7 +44,8 @@ type Model struct {
 	Locale        string        `json:"locale"`
 	BrandTagline  string        `json:"brand_tagline"`
 	Screens       []Screen      `json:"screens"`
-	Accessibility Accessibility `json:"accessibility"`
+	KDEValidation ValidationStatus `json:"kde_validation"`
+	Accessibility Accessibility    `json:"accessibility"`
 	Warnings      []string      `json:"warnings,omitempty"`
 }
 
@@ -42,17 +59,26 @@ func FoundationModelForLocale(version string, registry *adapter.Registry, locale
 	kdeAvailable := adapterAvailable(registry, "kde-config")
 	desktopDescription := message(locale, "screen.desktop.description")
 	desktopReason := message(locale, "screen.desktop.reason")
+	validation := ValidationStatus{
+		ID: "kde.real-plasma",
+		Title: message(locale, "validation.kde.title"),
+		State: ValidationBlocked,
+		Detail: message(locale, "validation.kde.blocked"),
+	}
 	if kdeAvailable {
 		desktopDescription = message(locale, "screen.desktop.description.kde")
 		desktopReason = ""
+		validation.State = ValidationNotRun
+		validation.Detail = message(locale, "validation.kde.not_run")
 	}
 
 	m := Model{
 		Product:      "Linux Desktop Customizer",
 		Version:      version,
-		Mode:         "stabilization",
+		Mode:         "kde-validation",
 		Locale:       locale,
 		BrandTagline: message(locale, "splash.tagline"),
+		KDEValidation: validation,
 		Screens: []Screen{
 			{ID: "home", Title: message(locale, "screen.home.title"), Description: message(locale, "screen.home.description"), Enabled: true},
 			{ID: "preview", Title: message(locale, "screen.preview.title"), Description: message(locale, "screen.preview.description"), Enabled: true},
