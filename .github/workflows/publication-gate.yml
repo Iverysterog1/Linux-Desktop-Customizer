@@ -1,88 +1,119 @@
 name: Publication verification gate
 
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
     branches: [main]
-    paths: ['publication-check/READY']
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    name: Publication verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v5
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: '1.23.x'
 
-      - name: Verify clean repository shape
+      - name: Verify current canonical source shape
         shell: bash
         run: |
           set -euo pipefail
-          test -f go.mod
-          test -f cmd/ltc/main.go
-          test -f cmd/ltc-ui/main.go
-          test -f LICENSE
-          test -f README.md
-          test -f SECURITY.md
-          test -f CONTRIBUTING.md
-          test -f docs/VALIDATION.md
-          for slug in fire water wind earth mac-inspired windows-inspired; do
-            test -f "assets/theme-previews/$slug.png"
-            test -f "themes/official/$slug/preview.png"
+          required=(
+            go.mod
+            LICENSE
+            AGENTS.md
+            README.md
+            SECURITY_TESTING_POLICY.md
+            cmd/ltc/main.go
+            cmd/ltc-ui/main.go
+            internal/transaction/engine.go
+            internal/profile/profile.go
+            internal/adapter/kde_config.go
+            packaging/install-user.sh
+            packaging/uninstall-user.sh
+            packaging/io.github.iverysterog1.LinuxDesktopCustomizer.desktop
+            scripts/test-install-user.sh
+            scripts/validate-desktop-entry.sh
+            docs/PROJECT_STATUS.md
+            docs/RELEASE_CHECKLIST.md
+            docs/GETTING_STARTED_UI.md
+            docs/REAL_LINUX_SCREENSHOTS.md
+          )
+          for path in "${required[@]}"; do
+            test -f "$path" || {
+              echo "Missing required canonical file: $path" >&2
+              exit 1
+            }
           done
-          test ! -e bootstrap
-          test ! -e import-bin
-          test ! -e import-parts
-          test ! -e import-tunnel
-          test ! -e final-sync
-          grep -q 'assets/theme-previews/fire.png' README.md
-          grep -q 'assets/theme-previews/windows-inspired.png' README.md
 
-      - name: Run release-quality checks
+      - name: Audit workflow write and publication primitives
         shell: bash
         run: |
           set -euo pipefail
-          go test ./... -count=1
-          go vet ./...
-          go build ./cmd/ltc
-          go build ./cmd/ltc-ui
-          bash -n packaging/install-user.sh packaging/uninstall-user.sh
-          git diff --check
+          mapfile -t workflows < <(find .github/workflows -maxdepth 1 -type f \( -name '*.yml' -o -name '*.yaml' \) -print | sort)
+          bash .github/scripts/check-workflow-write-regressions.sh "${workflows[@]}"
 
-      - name: Record publication verification
+      - name: Unit and integration tests
+        run: go test ./... -count=1
+
+      - name: Static analysis
+        run: go vet ./...
+
+      - name: Race detector
+        run: go test -race ./... -count=1
+
+      - name: Build CLI and UI
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p docs
-          cat > docs/PUBLICATION_STATUS.md <<'EOF'
-          # Public repository verification
+          go build -trimpath -o /tmp/ltc ./cmd/ltc
+          go build -trimpath -o /tmp/ltc-ui ./cmd/ltc-ui
+          /tmp/ltc version
+          /tmp/ltc-ui --json >/tmp/ltc-ui-model.json
+          test -s /tmp/ltc-ui-model.json
 
-          Initial public repository verification for **Linux Desktop Customizer 0.9.0-visual-composer**.
+      - name: Installer and desktop integration checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n packaging/install-user.sh packaging/uninstall-user.sh scripts/test-install-user.sh scripts/validate-desktop-entry.sh
+          bash scripts/validate-desktop-entry.sh
+          bash scripts/test-install-user.sh
 
-          Verified by the publication gate:
+      - name: Repository diff check
+        run: git diff --check
 
-          - source tree is present and import/bootstrap scaffolding is absent;
-          - six official theme preview images are present;
-          - six complete official generated theme trees are present;
-          - `go test ./... -count=1` passes;
-          - `go vet ./...` passes;
-          - `go build ./cmd/ltc` passes;
-          - `go build ./cmd/ltc-ui` passes;
-          - installer and uninstaller shell syntax checks pass;
-          - `git diff --check` passes.
+      - name: Verify validation is read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo 'Publication verification unexpectedly modified tracked files.' >&2
+            git status --short >&2
+            exit 1
+          fi
+          if test -n "$(git ls-files --others --exclude-standard)"; then
+            echo 'Publication verification unexpectedly created untracked files.' >&2
+            git status --short >&2
+            exit 1
+          fi
+          echo 'Publication verification passed without modifying the repository.'
 
-          This automated gate does **not** claim real-hardware validation across every Linux desktop/compositor combination. Remaining platform validation is tracked in `docs/VALIDATION.md`.
+      - name: State remaining external release gates
+        shell: bash
+        run: |
+          cat <<'EOF'
+          PASS here is necessary but not sufficient for FINAL READY.
+          Repository branch protection, real Plasma end-to-end validation,
+          clean Linux package/install validation, real screenshots,
+          DEB/RPM/release artifact integrity and explicit publication
+          authorization remain separate gates.
           EOF
-
-          rm -rf publication-check
-          rm -f .github/workflows/publication-gate.yml
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'Record initial public repository verification'
-          git push origin main
