@@ -145,8 +145,22 @@ echo "phase=preview"
 go run ./cmd/ltc preview --profile "$profile"
 
 echo "phase=apply"
+set +e
 go run ./cmd/ltc apply --profile "$profile" | tee "$apply_json"
+apply_status=${PIPESTATUS[0]}
+set -e
 txid="$(sed -n 's/^[[:space:]]*"id":[[:space:]]*"\([^"]*\)".*/\1/p' "$apply_json" | head -n1)"
+
+if [[ "$apply_status" -ne 0 ]]; then
+  echo "RESULT=FAIL"
+  if [[ -n "$txid" ]]; then
+    echo "reason=apply command failed after returning transaction id; emergency rollback will be attempted"
+  else
+    echo "reason=apply command failed before returning a transaction id"
+  fi
+  exit 1
+fi
+
 if [[ -z "$txid" ]]; then
   echo "RESULT=FAIL"
   echo "reason=apply returned no transaction id"
