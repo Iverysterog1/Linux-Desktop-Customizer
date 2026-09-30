@@ -2,7 +2,7 @@ name: Rebuild foundation CI
 
 on:
   pull_request:
-    branches: [integration/canonical]
+    branches: [integration/canonical, main]
   workflow_dispatch:
 
 permissions:
