@@ -49,6 +49,12 @@ A green build alone is not FINAL READY. Every applicable gate below needs eviden
 - [ ] Package/release artifact checksums (and signing where adopted) are verified.
 - [ ] Reproducibility/equivalence expectations are documented.
 
+## Licensing / provenance
+
+- [ ] The owner has selected the software license and a canonical `LICENSE` file is present.
+- [ ] Project-owned/generated assets have documented licensing.
+- [ ] Third-party assets/components have provenance and compatible licensing.
+
 ## Documentation / presentation
 
 - [ ] README reflects the actual shipped state.
