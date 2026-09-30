@@ -28,7 +28,7 @@ func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 		t.Fatal(err)
 	}
 	m := FoundationModel("test", r)
-	if m.Mode != "stabilization" {
+	if m.Mode != "kde-validation" {
 		t.Fatalf("mode = %q", m.Mode)
 	}
 	if m.Locale != LocaleEnglish {
@@ -41,6 +41,9 @@ func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 		if screen.ID == "desktop" && screen.Enabled {
 			t.Fatal("desktop screen must remain gated when no native desktop adapter is present")
 		}
+	}
+	if m.KDEValidation.State != ValidationBlocked {
+		t.Fatalf("KDE validation state = %q, want BLOCKED", m.KDEValidation.State)
 	}
 	if len(m.Warnings) == 0 {
 		t.Fatal("foundation model should explain current adapter limits")
@@ -75,6 +78,12 @@ func TestFoundationModelEnablesScopedKDEDesktopCapability(t *testing.T) {
 	}
 	if desktop.Reason != "" {
 		t.Fatalf("enabled desktop screen should not carry a gated reason: %q", desktop.Reason)
+	}
+	if m.KDEValidation.State != ValidationNotRun {
+		t.Fatalf("KDE validation state = %q, want NOT RUN", m.KDEValidation.State)
+	}
+	if !strings.Contains(m.KDEValidation.Detail, "visible") {
+		t.Fatalf("KDE validation detail should explain visible proof, got %q", m.KDEValidation.Detail)
 	}
 }
 
