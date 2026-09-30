@@ -9,15 +9,29 @@
 
 ## Required protection
 
-Before FINAL READY, repository rules for `integration/canonical` must enforce:
+Repository rules are currently active and verified.
+
+For `integration/canonical`:
 - pull-request-based integration;
-- required validation/status checks appropriate to the changed scope;
+- strict/up-to-date required checks: `Canonical CI`, `Race verification`, `Workflow write guard`;
+- required conversation resolution;
+- squash-only merging;
 - no force pushes;
-- no branch deletion.
+- no branch deletion;
+- no bypass actors.
 
-Review requirements must match the repository's actual reviewer model; do not configure an impossible self-approval gate for a single-owner workflow.
+For `main`:
+- pull-request-based integration;
+- strict/up-to-date required checks: `Canonical CI`, `Race verification`, `Workflow write guard`, `Publication verification`;
+- required conversation resolution;
+- squash-only merging;
+- no force pushes;
+- no branch deletion;
+- no bypass actors.
 
-Until these rules are enabled and reverified, Security B remains FAIL — MEDIUM.
+Review requirements match the current single-owner reviewer model with zero mandatory independent approvals, avoiding an impossible self-approval gate.
+
+Security B is **PASS** for the current stabilization boundary. Re-verify these controls on security-sensitive changes and again on the final release candidate.
 
 ## Coordination
 
@@ -27,7 +41,7 @@ No direct canonical push is an accepted substitute for PR review, even when the 
 
 ## Cleanup
 
-Old topic branches are not historical archives. Once unique content is verified integrated/superseded and the PR/history preserves evidence, delete the branch when permissions allow.
+Old topic branches are not historical archives. Once unique content is verified integrated/superseded and the PR/history preserves evidence, delete the branch when permissions allow. The repository currently retains only `main` and `integration/canonical`; automatic deletion of merged head branches is enabled.
 
 Recovery evidence that documents genuinely unrecoverable historical source remains preserved under explicit evidence paths and Git history.
 
