@@ -12,6 +12,7 @@ import (
 
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/app"
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/platform"
+	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/profile"
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/transaction"
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/version"
 )
@@ -119,24 +120,13 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 }
 
 func loadPlan(path string) (transaction.Plan, error) {
-	f, err := os.Open(path)
+	p, err := profile.LoadFile(path)
 	if err != nil {
-		return transaction.Plan{}, fmt.Errorf("open profile: %w", err)
+		return transaction.Plan{}, fmt.Errorf("load profile: %w", err)
 	}
-	defer f.Close()
-
-	dec := json.NewDecoder(io.LimitReader(f, 1<<20))
-	dec.DisallowUnknownFields()
-	var plan transaction.Plan
-	if err := dec.Decode(&plan); err != nil {
-		return transaction.Plan{}, fmt.Errorf("decode profile: %w", err)
-	}
-	var extra any
-	if err := dec.Decode(&extra); err != io.EOF {
-		if err == nil {
-			return transaction.Plan{}, fmt.Errorf("decode profile: trailing JSON content")
-		}
-		return transaction.Plan{}, fmt.Errorf("decode profile: %w", err)
+	plan, err := profile.ToPlan(p)
+	if err != nil {
+		return transaction.Plan{}, fmt.Errorf("convert profile: %w", err)
 	}
 	return plan, nil
 }
