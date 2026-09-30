@@ -28,6 +28,7 @@ jobs:
           set -euo pipefail
           required=(
             go.mod
+            LICENSE
             AGENTS.md
             README.md
             SECURITY_TESTING_POLICY.md
