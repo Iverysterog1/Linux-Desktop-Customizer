@@ -26,17 +26,17 @@ An active repository ruleset now enforces:
 - branch deletion blocked;
 - zero bypass actors.
 
-### main — pending
+### main — workflow hardening PASS / final ruleset pending
 
-`main` is marked protected by GitHub, but the currently observable legacy protection reports required-status-check enforcement off and there is no repository ruleset for it yet.
+PR #75 removed the legacy write-capable bootstrap/finalize/beta/recovery/sync/tag workflows from `main` and replaced them with the reviewed read-only validation set. A temporary draft PR from `integration/canonical` to `main` (#76) then proved all four release-line checks PASS on the full canonical candidate and was closed without merge.
 
-Before FINAL READY, `main` must have repository-enforced:
+`main` is still missing the final repository ruleset. Before FINAL READY, it must have repository-enforced:
 - pull requests;
 - `Canonical CI`, `Race verification`, `Workflow write guard`, and `Publication verification`;
 - force-push protection;
 - deletion protection;
 - no broad bypass.
 
-Until the `main` release-line rules are applied and reverified, repository-wide **Security B remains FAIL — MEDIUM**.
+Until the `main` release-line rules are applied/reverified and stale topic refs are cleaned/relisted, repository-wide **Security B remains FAIL — MEDIUM**.
 
 No code or workflow workaround is considered equivalent to repository-enforced protection.
