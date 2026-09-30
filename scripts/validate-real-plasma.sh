@@ -77,7 +77,7 @@ echo "ltc_status_begin"
 go run ./cmd/ltc status
 echo "ltc_status_end"
 echo "native_scheme_list_begin"
-LC_ALL=C plasma-apply-colorscheme --list-schemes || true
+scheme_list="$(LC_ALL=C plasma-apply-colorscheme --list-schemes)"\nprintf '%s\\n' "$scheme_list"
 echo "native_scheme_list_end"
 
 if [[ "$apply" != true ]]; then
