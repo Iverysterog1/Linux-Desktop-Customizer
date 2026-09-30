@@ -4,7 +4,7 @@ Date: 2026-09-30
 
 ## Current phase
 
-The clean rebuild foundation milestone is complete; Issue #40 is closed. The project remains under a temporary **stabilization freeze** coordinated in Issue #47 before feature expansion resumes.
+The clean rebuild foundation milestone is complete; Issue #40 is closed. The 2026-09-30 stabilization gate is now **PASS** and the temporary feature freeze is lifted. Controlled product development resumes under Issue #47, starting with real Plasma/KDE validation.
 
 `integration/canonical` is the sole integrated development truth. `main` remains the stable/release line.
 
@@ -27,8 +27,6 @@ Current canonical includes:
 ## Not final yet
 
 The project is not release-ready. Outstanding gates include:
-- final repository ruleset enforcement for `main` using the four validated release-line checks;
-- cleanup/revalidation of superseded topic branches;
 - real Plasma end-to-end apply/visible validation/rollback evidence;
 - complete graphical preview/apply/history/undo flow;
 - DEB/RPM and trusted terminal release installer;
@@ -44,6 +42,8 @@ The previous `integration/canonical` protection finding is resolved: an active r
 
 `main` has now been hardened by PR #75: the legacy write/force-push/tag workflows were removed and replaced by the four reviewed read-only validation workflows. A temporary canonical-to-main PR (#76) proved `Canonical CI`, `Race verification`, `Workflow write guard`, and `Publication verification` all PASS against the full canonical candidate and was then closed without merge.
 
-Repository-wide Security B remains **FAIL — MEDIUM** only until `main` receives the final repository ruleset requiring those four checks, force-push/deletion protection and no broad bypass, and the stale branch inventory is cleaned/reverified.
+`main` now has an active final ruleset requiring pull requests, strict/up-to-date `Canonical CI`, `Race verification`, `Workflow write guard`, and `Publication verification`, with conversation resolution, squash-only merging, force-push/deletion blocking and no bypass actors. The repository branch inventory was reduced to only `main` and `integration/canonical`, and automatic merged-head branch deletion is enabled.
+
+Repository-wide **Security B: PASS** for the current stabilization boundary.
 
 Software licensing is settled as **0BSD**. No release or promotion to `main` is authorized.
