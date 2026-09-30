@@ -2,15 +2,14 @@ name: Workflow write regression guard
 
 on:
   pull_request:
-    paths:
-      - '.github/workflows/**'
-      - '.github/scripts/check-workflow-write-regressions.sh'
+    branches: [integration/canonical, main]
 
 permissions:
   contents: read
 
 jobs:
   audit:
+    name: Workflow write guard
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

@@ -1,11 +1,21 @@
 package ui
 
 import (
+	"context"
 	"strings"
 	"testing"
 
 	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/adapter"
+	"github.com/Iverysterog1/Linux-Desktop-Customizer/internal/capability"
 )
+
+type modelTestAdapter struct{ name string }
+
+func (a modelTestAdapter) Name() string { return a.name }
+func (a modelTestAdapter) Capabilities(context.Context) []capability.Capability { return nil }
+func (a modelTestAdapter) Read(context.Context, string) (string, bool, error) { return "", false, nil }
+func (a modelTestAdapter) Set(context.Context, string, string) error { return nil }
+func (a modelTestAdapter) Unset(context.Context, string) error { return nil }
 
 func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 	t.Parallel()
@@ -18,7 +28,7 @@ func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 		t.Fatal(err)
 	}
 	m := FoundationModel("test", r)
-	if m.Mode != "rebuild-foundation" {
+	if m.Mode != "stabilization" {
 		t.Fatalf("mode = %q", m.Mode)
 	}
 	if m.Locale != LocaleEnglish {
@@ -29,7 +39,7 @@ func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 	}
 	for _, screen := range m.Screens {
 		if screen.ID == "desktop" && screen.Enabled {
-			t.Fatal("desktop screen must remain gated until a native adapter is integrated")
+			t.Fatal("desktop screen must remain gated when no native desktop adapter is present")
 		}
 	}
 	if len(m.Warnings) == 0 {
@@ -40,6 +50,31 @@ func TestFoundationModelDoesNotOverclaimDesktopSupport(t *testing.T) {
 		!m.Accessibility.HighContrastSupported ||
 		!m.Accessibility.KeyboardNavigationSupported {
 		t.Fatal("foundation model must expose accessibility capabilities")
+	}
+}
+
+func TestFoundationModelEnablesScopedKDEDesktopCapability(t *testing.T) {
+	t.Parallel()
+	r, err := adapter.NewRegistry(modelTestAdapter{name: "kde-config"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := FoundationModel("test", r)
+	var desktop Screen
+	for _, screen := range m.Screens {
+		if screen.ID == "desktop" {
+			desktop = screen
+			break
+		}
+	}
+	if !desktop.Enabled {
+		t.Fatal("desktop screen should be enabled when reviewed kde-config adapter is available")
+	}
+	if !strings.Contains(desktop.Description, "color-scheme") {
+		t.Fatalf("desktop description must remain scoped, got %q", desktop.Description)
+	}
+	if desktop.Reason != "" {
+		t.Fatalf("enabled desktop screen should not carry a gated reason: %q", desktop.Reason)
 	}
 }
 

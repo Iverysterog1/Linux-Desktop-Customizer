@@ -1,16 +1,8 @@
-name: Rebuild foundation CI
+name: Canonical CI
 
 on:
   pull_request:
-    branches: [integration/canonical]
-    paths:
-      - 'go.mod'
-      - 'go.sum'
-      - '**/*.go'
-      - 'packaging/**'
-      - 'scripts/test-install-user.sh'
-      - 'scripts/validate-desktop-entry.sh'
-      - '.github/workflows/ci.yml'
+    branches: [integration/canonical, main]
   workflow_dispatch:
 
 permissions:
@@ -18,6 +10,7 @@ permissions:
 
 jobs:
   test:
+    name: Canonical CI
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

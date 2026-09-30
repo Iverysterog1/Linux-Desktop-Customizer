@@ -2,17 +2,18 @@ name: Publication verification gate
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: Publication verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-      # SECURITY: pin third-party Actions to immutable commit SHAs. Mutable
-      # major-version tags can move and are not a sufficient trust boundary.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
@@ -21,40 +22,74 @@ jobs:
         with:
           go-version: '1.23.x'
 
-      - name: Verify clean repository shape
+      - name: Verify current canonical source shape
         shell: bash
         run: |
           set -euo pipefail
-          test -f go.mod
-          test -f cmd/ltc/main.go
-          test -f cmd/ltc-ui/main.go
-          test -f LICENSE
-          test -f README.md
-          test -f SECURITY.md
-          test -f CONTRIBUTING.md
-          test -f docs/VALIDATION.md
-          for slug in fire water wind earth mac-inspired windows-inspired; do
-            test -f "assets/theme-previews/$slug.png"
-            test -f "themes/official/$slug/preview.png"
+          required=(
+            go.mod
+            LICENSE
+            AGENTS.md
+            README.md
+            SECURITY_TESTING_POLICY.md
+            cmd/ltc/main.go
+            cmd/ltc-ui/main.go
+            internal/transaction/engine.go
+            internal/profile/profile.go
+            internal/adapter/kde_config.go
+            packaging/install-user.sh
+            packaging/uninstall-user.sh
+            packaging/io.github.iverysterog1.LinuxDesktopCustomizer.desktop
+            scripts/test-install-user.sh
+            scripts/validate-desktop-entry.sh
+            docs/PROJECT_STATUS.md
+            docs/RELEASE_CHECKLIST.md
+            docs/GETTING_STARTED_UI.md
+            docs/REAL_LINUX_SCREENSHOTS.md
+          )
+          for path in "${required[@]}"; do
+            test -f "$path" || {
+              echo "Missing required canonical file: $path" >&2
+              exit 1
+            }
           done
-          test ! -e bootstrap
-          test ! -e import-bin
-          test ! -e import-parts
-          test ! -e import-tunnel
-          test ! -e final-sync
-          grep -q 'assets/theme-previews/fire.png' README.md
-          grep -q 'assets/theme-previews/windows-inspired.png' README.md
 
-      - name: Run release-quality checks
+      - name: Audit workflow write and publication primitives
         shell: bash
         run: |
           set -euo pipefail
-          go test ./... -count=1
-          go vet ./...
-          go build ./cmd/ltc
-          go build ./cmd/ltc-ui
-          bash -n packaging/install-user.sh packaging/uninstall-user.sh
-          git diff --check
+          mapfile -t workflows < <(find .github/workflows -maxdepth 1 -type f \( -name '*.yml' -o -name '*.yaml' \) -print | sort)
+          bash .github/scripts/check-workflow-write-regressions.sh "${workflows[@]}"
+
+      - name: Unit and integration tests
+        run: go test ./... -count=1
+
+      - name: Static analysis
+        run: go vet ./...
+
+      - name: Race detector
+        run: go test -race ./... -count=1
+
+      - name: Build CLI and UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          go build -trimpath -o /tmp/ltc ./cmd/ltc
+          go build -trimpath -o /tmp/ltc-ui ./cmd/ltc-ui
+          /tmp/ltc version
+          /tmp/ltc-ui --json >/tmp/ltc-ui-model.json
+          test -s /tmp/ltc-ui-model.json
+
+      - name: Installer and desktop integration checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n packaging/install-user.sh packaging/uninstall-user.sh scripts/test-install-user.sh scripts/validate-desktop-entry.sh
+          bash scripts/validate-desktop-entry.sh
+          bash scripts/test-install-user.sh
+
+      - name: Repository diff check
+        run: git diff --check
 
       - name: Verify validation is read-only
         shell: bash
@@ -71,3 +106,14 @@ jobs:
             exit 1
           fi
           echo 'Publication verification passed without modifying the repository.'
+
+      - name: State remaining external release gates
+        shell: bash
+        run: |
+          cat <<'EOF'
+          PASS here is necessary but not sufficient for FINAL READY.
+          Repository branch protection, real Plasma end-to-end validation,
+          clean Linux package/install validation, real screenshots,
+          DEB/RPM/release artifact integrity and explicit publication
+          authorization remain separate gates.
+          EOF

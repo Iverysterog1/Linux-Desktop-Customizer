@@ -1,8 +1,8 @@
 # Graphical UI onboarding / Início da interface gráfica
 
-The current graphical runtime is an **early, read-only local UI**. It is not a release build and it does not yet apply desktop changes.
+The current graphical runtime is an **early, read-only local UI for mutation**. It is not a release build. The backend/CLI already exposes a reviewed, scoped KDE color-scheme path, but graphical apply/undo stays gated until real Plasma end-to-end validation is complete.
 
-A interface gráfica atual é uma **interface local inicial e apenas de leitura**. Ainda não é uma versão final e ainda não aplica alterações ao ambiente de trabalho.
+A interface gráfica atual é uma **interface local inicial e ainda sem mutação pela UI**. Ainda não é uma versão final. O backend/CLI já tem um caminho KDE revisto e limitado ao esquema de cores, mas aplicar/desfazer pela interface continua bloqueado até existir validação completa num Plasma real.
 
 ## Build / Compilar
 

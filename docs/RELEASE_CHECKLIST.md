@@ -1,59 +1,68 @@
 # Release readiness checklist
 
-A branch name, green documentation check, or successfully created archive is not sufficient. A release is ready only when every applicable item below has evidence.
+A green build alone is not FINAL READY. Every applicable gate below needs evidence on the intended release candidate.
 
-## Source and version
+## Source / governance
 
-- [ ] Canonical source tree is reconstructed from authoritative preserved material.
-- [ ] Reconstruction provenance and SHA-256 are recorded.
-- [ ] Internal `VERSION` agrees with package metadata, application metadata and release notes.
-- [ ] Changelog contains the target version and only verified changes.
-- [ ] Packaging uses a clean working tree tied to one reviewed commit SHA.
+- [x] Clean rebuilt Go foundation exists on `integration/canonical`.
+- [x] CLI/UI and safe transaction/profile boundaries exist.
+- [ ] `integration/canonical` is protected: PR required, required checks enforced, force-push/delete blocked.
+- [ ] Final promotion to `main` occurs only through a protected PR.
+- [ ] Target version/changelog/release notes are internally consistent.
 
-## Tests and CI
+## Tests and security
 
-- [ ] Unit tests pass from a clean checkout.
-- [ ] `go vet ./...` passes.
-- [ ] Supported race tests pass.
-- [ ] `git diff --check` passes.
-- [ ] CLI and graphical UI targets build from a clean checkout.
-- [ ] Release-critical validation does not hide failures with unconditional `|| true`.
+- [ ] Unit/integration tests PASS on the exact release candidate.
+- [ ] `go vet ./...` PASS.
+- [ ] `go test -race ./...` PASS.
+- [ ] CLI and UI builds PASS.
+- [ ] Publication verification gate PASS.
+- [ ] Security A has no unresolved release blocker.
+- [ ] Security B / supply-chain review PASS.
+- [ ] No credentials, tokens, private paths or user data in source/artifacts.
 
-## Packaging and reproducibility
+## KDE product validation
 
-- [ ] Installer and uninstaller pass syntax and functional smoke tests.
-- [ ] Package contains the expected binaries, license, documentation and required theme assets.
-- [ ] Package file list is recorded.
-- [ ] SHA-256 is generated for every distributable artifact.
-- [ ] A second clean build produces equivalent release contents; unavoidable nondeterminism is documented.
-- [ ] No release job force-pushes or writes directly to `main`.
-- [ ] Publishing and tagging remain separate reviewed, human-authorized actions.
+- [ ] Real Plasma session: detect -> preview -> snapshot -> apply -> effective/visible validation -> rollback/unapply PASS.
+- [ ] Wayland representative validation PASS.
+- [ ] X11 representative validation PASS where supported.
+- [ ] Fractional-scaling compatibility state is explicit.
+- [ ] Unsupported/unknown states never silently become PASS.
+- [ ] KDE-008 is implemented before any monitor-specific layout/panel/widget/wallpaper restore ships.
 
-## Desktop integration
+## Graphical UX / localization
 
-- [ ] `.desktop` entry validates and launches the installed graphical binary.
-- [ ] Application name, executable, icon and categories are consistent.
-- [ ] Icon is installed at valid freedesktop sizes/paths or as a valid scalable icon.
-- [ ] AppStream/metainfo is validated if shipped.
-- [ ] Application appears correctly in a representative Linux application menu.
-- [ ] Uninstall removes only files owned by the application.
+- [ ] Real graphical preview/review/apply/history/undo flow is usable.
+- [ ] English shipped flow is complete.
+- [ ] Portuguese (pt-PT) shipped flow is complete.
+- [ ] Keyboard, reduced-motion, readability/high-contrast requirements are verified.
+- [ ] Capability reporting matches actual runtime support.
 
-## Licensing and privacy
+## Distribution
 
-- [ ] Software license is present in the source and release archive.
-- [ ] Generated/project-owned theme asset licensing is documented.
-- [ ] Third-party assets have provenance and compatible licensing.
-- [ ] No credentials, tokens, private paths or user data are present in source, package or artifacts.
-- [ ] Network/update behavior matches the documented privacy model.
+- [x] User-local installer/uninstaller baseline tests PASS.
+- [ ] DEB package built and validated.
+- [ ] RPM package built and validated.
+- [ ] Trusted/versioned terminal installer uses the same release artifacts and verifies integrity.
+- [ ] Clean Linux install -> launch -> use -> uninstall PASS.
+- [ ] Ordinary uninstall preserves user data/recovery state.
+- [ ] Package/release artifact checksums (and signing where adopted) are verified.
+- [ ] Reproducibility/equivalence expectations are documented.
 
-## User experience
+## Licensing / provenance
 
-- [ ] Primary path is `download → install → application menu → launch`.
-- [ ] Terminal fallback is documented.
-- [ ] Supported distributions/desktops and known limitations are stated.
-- [ ] Real screenshots come from the validated build; fabricated UI is never presented as the application.
-- [ ] Upgrade and rollback expectations are documented.
+- [ ] The owner has selected the software license and a canonical `LICENSE` file is present.
+- [ ] Project-owned/generated assets have documented licensing.
+- [ ] Third-party assets/components have provenance and compatible licensing.
 
-## Release gate
+## Documentation / presentation
 
-Do not create a public release or version tag until all mandatory checks have evidence attached to the release PR or linked validation records. No failed integrity gate may be bypassed by combining unrelated historical streams without byte-level provenance.
+- [ ] README reflects the actual shipped state.
+- [ ] User-facing documentation is available in EN + pt-PT for shipped flows.
+- [ ] Supported distributions/desktops and limitations are explicit.
+- [ ] Real screenshots from the validated application are committed and shown on GitHub.
+- [ ] Screenshot evidence contains no private/sensitive user data.
+
+## Publication
+
+A release/tag/package publication happens only after every mandatory gate is PASS and the owner gives explicit final publication authorization.
