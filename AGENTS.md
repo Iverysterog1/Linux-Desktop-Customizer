@@ -2,40 +2,71 @@
 
 This file applies to every automated agent and contributor working in this repository.
 
-## One canonical development line
+## Source of truth
 
-During the current consolidation phase, `integration/canonical` is the single integrated development line and `main` is the stable baseline. Before doing any work, verify the live GitHub refs and read the consolidation status/checklist. Do not start another broad `develop`, `integration`, recovery, or security line in parallel.
+- `integration/canonical` is the sole integrated development truth.
+- `main` is the stable/release line and must never receive direct or force pushes.
+- Every implementation starts from the latest verified canonical SHA and returns through a reviewed pull request.
+- Closed PRs and Git history preserve audit evidence; old topic branches are not alternate sources of truth.
 
-After consolidation, all development continues from the canonical integrated state. Short-lived topic branches are allowed when useful for review, but their work must return to the canonical line through validation/review. Never push directly or force-push to `main`.
+## Current phase — stabilization freeze
 
-## Agent autonomy
+As of 2026-09-30, feature expansion is temporarily frozen while the current product foundation is solidified.
 
-Agents have broad autonomy to inspect, design, implement, refactor, test, document, harden, research, and coordinate work needed to advance the project. They may decompose work into specialist sub-agents or parallel workstreams when the execution environment supports that capability. Any sub-agent inherits this entire contract and must report its changes/evidence back to the canonical project state.
+During the freeze:
+- A1/A2/A3/B1/B2/B3 work only on correctness, tests, security, CI, documentation, packaging baseline, stale capability reporting, validation, and verified-obsolete cleanup.
+- Research may continue but produces backlog/architecture input only; it does not activate implementation.
+- Security A/B re-audit the exact stabilization head.
+- No new product feature is activated until the Supervisor records the freeze as PASS in Issue #47.
 
-Autonomy does not override platform permissions, safety boundaries, repository protections, review gates, or explicit owner restrictions. Agents must not merge to `main`, publish releases/tags/packages, rotate credentials, weaken protections, fabricate recovery bytes/evidence, or discard unclassified work unless separately and explicitly authorized.
+The freeze ends only after the stabilization PR is green, documentation/process state matches reality, obsolete active-tree material is classified, and every remaining blocker is explicit.
 
-## Coordination rule
+## Coordination
 
-Before creating a branch or PR, check whether an active canonical branch/PR already covers the objective. Prefer updating/continuing existing canonical work over creating overlapping branches. Parallel specialist branches must be narrowly scoped, short-lived, and reconciled into the canonical line; they are never competing sources of truth.
+Issue #47 is the shared coordination ledger and the Supervisor is the single coordination authority.
 
-Agents should leave durable handoff information in the repository: objective, affected files, validation performed, PASS/FAIL/BLOCKED/NOT RUN evidence, blockers, and next safe action. Future agents must consume that handoff before continuing.
+Programmer roles do not independently create coordination issues or redefine ownership. Before coding, each active slice must have a Supervisor-recorded objective and bounded write-set. Scope expansion requires a Supervisor amendment before editing additional files.
 
-## Development priorities
+Before creating a branch or PR:
+1. verify current `integration/canonical` SHA and protection state;
+2. read Issue #47 and open PRs;
+3. confirm no overlapping active slice;
+4. use a short-lived specialist branch;
+5. preserve PASS / FAIL / BLOCKED / NOT RUN evidence.
 
-1. Finish repository consolidation without losing unique work.
-2. Neutralize legacy direct/force-write publication paths and minimize workflow permissions.
-3. Establish a complete, provenance-backed, buildable canonical application source.
-4. Validate dependencies, supply chain, secrets exposure paths, privacy/network behavior, update mechanisms, packaging/install/uninstall, and recovery behavior.
-5. Continue product/UI/customization development from the canonical source only.
-6. Keep installation simple and public metadata/screenshots/version claims aligned with verified builds.
-7. Test aggressively and fix discovered defects before release preparation.
+Never hide or rewrite a failure to make the project appear cleaner.
 
-## Evidence and safety
+## Cleanup
 
-Use PASS only for checks actually executed successfully against the stated commit/input. Use FAIL for executed failures, BLOCKED for missing/invalid authoritative prerequisites, and NOT RUN for checks not executed. Never convert historical or assumed results into current PASS evidence.
+Merged/superseded topic branches should be deleted after no-loss verification when repository permissions allow. Historical evidence belongs in Git history, closed PRs/issues, and explicit recovery-evidence paths—not in stale active branches or contradictory current-state documentation.
 
-Recovery and validation workflows observe/reconstruct; they do not publish. External or mutable inputs require provenance/integrity controls. Missing source bytes or objects remain blockers rather than being guessed.
+Do not delete:
+- authoritative recovery evidence;
+- unresolved unique work;
+- security evidence needed to explain a current or historical finding.
 
-## Completion behavior
+## Security and execution boundaries
 
-Agents should keep advancing independently within these boundaries instead of waiting for routine implementation decisions. Escalate only when an action requires owner authorization, credentials, destructive cleanup, release publication, a consequential product decision with no safe default, or when authoritative source/evidence is unavailable.
+- no arbitrary downloaded/profile scripts;
+- least privilege;
+- immutable third-party GitHub Action pins;
+- active validation workflows remain read-only;
+- no silent privilege escalation;
+- no direct publication from development workflows;
+- filesystem/profile/transaction boundaries remain bounded and regression-tested.
+
+`integration/canonical` must be protected by repository rules before FINAL READY: PR-required integration, required validation checks, no force pushes, and no branch deletion. Until that is enforced and reverified, Security B remains FAIL.
+
+## Release
+
+No merge/push to `main`, tag, package publication, release publication, or automatic updater activation without explicit final owner authorization and all Definition-of-Done gates passing.
+
+## Evidence convention
+
+Use:
+- **PASS** — executed and successful on the stated commit/input;
+- **FAIL** — executed and failed;
+- **BLOCKED** — authoritative prerequisite or permission is missing;
+- **NOT RUN** — not executed.
+
+Assumptions and historical results are never converted into current PASS evidence.
